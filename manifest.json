@@ -1,0 +1,27 @@
+{
+    "name": "BWASP CRX",
+    "short_name": "BWASP",
+    "description": "Manual web vulnerability analyzer",
+    "verseion" : 1,
+    "default_locale": "en",
+    "manifest_version": 2,
+    "default_title" : "BWASP CRX",
+    "default_popup" : "html/popup.html",
+    "background": {
+        "page":"html/background.html"
+    },
+
+    "permissions": [
+        "cookies",
+        "storage",
+        "debugger",
+        "sessions",
+        "tabs",
+        "webRequest",
+        "webNavigation",
+        "http://*/*",
+        "https://*/*"
+      ],
+      "content_security_policy": "script-src 'self'; object-src 'self'"
+
+}

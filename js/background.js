@@ -44,6 +44,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                 }
             })
         })
+        console.log("tab(",tab.id,")",tab.title,"is now debugged")
         }
     }
     if (changeInfo.status == 'complete' && debugid == tab.id && !tab.url.match(url_filter)){
@@ -58,6 +59,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             }
         })
         })
+        console.log("tab(",tab.id,")",tab.title,"is now debugged")
         isdebug = true
         debugid = tab.id
     }
@@ -70,7 +72,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             }
         })
         })
-        await sendCommand('Network.enable')
+        
         chrome.debugger.onEvent.addListener(async (source, method, params) => {
         try {
         switch (method) {
@@ -78,12 +80,14 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             const { requestId,request} = params
             if(!packet.hasOwnProperty(requestId))
             packet[requestId] = JSON.parse(JSON.stringify(packet_form));
-
             packet[requestId][0]["request"]["full_url"] = request.url
+            request_url = new URL(request.url)
+            packet[requestId][0]["request"]["url"] = request_url.pathname+request_url.search+request_url.hash
             //console.log(params.requestId,requestId,request.url)
             packet[requestId][0]["request"]["method"] = request.method
             //console.log(params.requestId,requestId,request.method)
-            packet[requestId][0]["request"]["headers"] = request.headers
+            lower_header = request.headers
+            packet[requestId][0]["request"]["headers"] = Object.keys(request.headers).reduce((c, k) => (c[k.toLowerCase()] = request.headers[k], c), {});
             //console.log(params.requestId,JSON.stringify(request.headers))
             if(request.hasPostData)
             packet[requestId][0]["request"]["body"]=request.postData
@@ -97,7 +101,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             {
                 packet[requestId][0]["response"]["status_code"] = response.status
                 //console.log(params.requestId,requestId,response.status)
-                packet[requestId][0]["response"]["headers"] = response.headers
+                packet[requestId][0]["response"]["headers"] = Object.keys(response.headers).reduce((c, k) => (c[k.toLowerCase()] = response.headers[k], c), {});
                 //console.log(params.requestId,requestId,JSON.stringify(response.headers))
                 const result = await sendCommand('Network.getResponseBody', { requestId })
                 packet[requestId][0]["response"]["body"] = result.body
@@ -108,8 +112,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             }
         }} catch (e){ /*console.log("error",e)*/}
         })
+        await sendCommand('Network.enable')
         
-        console.log("tab(",tab.id,")",tab.title,"is now debugged")
     }
     else if(changeInfo.status != 'unloaded' && !tab.url.match(url_filter))
         console.log("tab(",tab.id,")",tab.title,"is not debugged")

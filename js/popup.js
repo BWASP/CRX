@@ -4,16 +4,11 @@ import {API as api, createKey, tableBuilder} from './jHelper.js';
 let stateHandler = {
     isVector: true
 },
-keyAndStrings = [
-    {
-        type: "packets",
-        viewString: "Packets"
-    },
-    {
-        type: "vectors",
-        viewString: "Attack Vectors"
-    }
-],
+keyAndStrings = 
+  {
+      type: "vectors",
+      viewString: "Attack Vectors"
+  },
 returnError = (errorMessage = ["No data", ""]) => {
     let condition = (typeof (errorMessage) !== "string");
     console.log(errorMessage, typeof (errorMessage), condition);
@@ -39,7 +34,7 @@ function buildTable(dataPackage) {
                 tbody: document.createElement("tbody")
             }
         },
-    currentState = keyAndStrings[Number(stateHandler.isVector)];
+    currentState = keyAndStrings;
 
     // Update title bar string and
     document.getElementById("pageTitle").innerHTML = currentState.viewString;

@@ -6,8 +6,13 @@ let current_taburl = ""
 let debugid = -2
 let packet = []
 let page_list = new Array()
-let loaderid_list = new Array()
+let request_list = new Array()
 
+let page_index = -1  // integer
+let loader_dict = {}
+let link_list = new Array()
+let sendpage_index = -1
+let reset_index = 0
 
 const packet_form = [{
     "request": {
@@ -40,6 +45,7 @@ function push_loaderid_list(input_page, input_listid) {
 //https://gist.github.com/tz4678/a8484b84d7c89ea5bdfeae973c0b964d
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
+    console.log("changeInfo","Url 변경유무",changeInfo.status,changeInfo.url)
     if (debugid == -2 && !tab.url.match(url_filter)) {
         debugid = tab.id
     }
@@ -112,22 +118,53 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                                 requestId,
                                 request
                             } = params
-                            console.log("출력", requestId, "형태", typeof requestId)
-                            if (!packet.hasOwnProperty(requestId)) {
-                                packet[requestId] = JSON.parse(JSON.stringify(packet_form))
+                            if(params.type == "Document"){
+
+                                if(params.initiator.type == "other")
+                                {
+                                    //console.log("page 번호",++page_index)
+                                    link_list.push(params.documentURL)
+                                }
+                                if(page_index != -1)
+                                {
+                                    //console.log("Nope",params,params.initiator.type)//,params.type,"현재 url",params.initiator.url)
+                                    loader_dict[params.loaderId] = page_index
+                                    packet.push([])
+                                    //packet.push([{}])
+                                    //console.log("로더 딕트 입력",loader_dict)
+
+                                }
                             }
-                            packet[requestId][0]["request"]["full_url"] = request.url
-                            request_url = new URL(request.url)
-                            packet[requestId][0]["request"]["url"] = request_url.pathname + request_url.search + request_url.hash
-                            //console.log(params.requestId,requestId,request.url)
-                            packet[requestId][0]["request"]["method"] = request.method
-                            //console.log(params.requestId,requestId,request.method)
-                            lower_header = request.headers
-                            packet[requestId][0]["request"]["headers"] = Object.keys(request.headers).reduce((c, k) => (c[k.toLowerCase()] = request.headers[k], c), {});
-                            //console.log(params.requestId,JSON.stringify(request.headers))
-                            if (request.hasPostData)
-                                packet[requestId][0]["request"]["body"] = request.postData
-                            //console.log(params.requestId,requestId,request.postData)
+                            //else
+                              //  console.log("Yes",params,params.type,"현재 url",params.initiator.url)
+
+                            //request_list.push(requestId)
+                            //console.log("출력", requestId, "형태", typeof requestId)
+                            //console.log("loader id",params,params.loaderId,loader_dict,loader_dict[params.loaderId])
+                            //console.log("패킷 상태",packet)
+
+                            if (loader_dict.hasOwnProperty(params.loaderId)){  // Document 가 오지 않았을 떄는 무시
+
+                                if (!packet[loader_dict[params.loaderId]].hasOwnProperty(requestId)) {
+
+                                    packet[loader_dict[params.loaderId]][requestId] = JSON.parse(JSON.stringify(packet_form))
+                                }
+    
+                                packet[loader_dict[params.loaderId]][requestId][0]["request"]["full_url"] = request.url
+                                request_url = new URL(request.url)
+                                packet[loader_dict[params.loaderId]][requestId][0]["request"]["url"] = request_url.pathname + request_url.search + request_url.hash
+                                //console.log(params.requestId,requestId,request.url)
+                                packet[loader_dict[params.loaderId]][requestId][0]["request"]["method"] = request.method
+                                //console.log(params.requestId,requestId,request.method)
+                                lower_header = request.headers
+                                packet[loader_dict[params.loaderId]][requestId][0]["request"]["headers"] = Object.keys(request.headers).reduce((c, k) => (c[k.toLowerCase()] = request.headers[k], c), {});
+                                //console.log(params.requestId,JSON.stringify(request.headers))
+                                if (request.hasPostData)
+                                    packet[loader_dict[params.loaderId]][requestId][0]["request"]["body"] = request.postData
+                                //console.log(params.requestId,requestId,request.postData)
+
+                            }
+
                             break
                         }
                         case 'Network.responseReceived': {
@@ -141,21 +178,23 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                                 console.log("리퀘스트 아이디 에러 ", e)
                             }
                             // if exists request 
-                
-                            if (packet.hasOwnProperty(requestId)) {
-                                packet[requestId][0]["response"]["status_code"] = response.status
-                                //console.log(params.requestId,requestId,response.status)
-                                packet[requestId][0]["response"]["headers"] = Object.keys(response.headers).reduce((c, k) => (c[k.toLowerCase()] = response.headers[k], c), {});
-                                //console.log(params.requestId,requestId,JSON.stringify(response.headers))
+                            
+                            if (loader_dict.hasOwnProperty(params.loaderId)){
+                                if (!packet[loader_dict[params.loaderId]].hasOwnProperty(requestId)) {
+                                    packet[loader_dict[params.loaderId]][requestId][0]["response"]["status_code"] = response.status
+                                    //console.log(params.requestId,requestId,response.status)
+                                    packet[loader_dict[params.loaderId]][requestId][0]["response"]["headers"] = Object.keys(response.headers).reduce((c, k) => (c[k.toLowerCase()] = response.headers[k], c), {});
+                                    //console.log(params.requestId,requestId,JSON.stringify(response.headers))
 
-                                try{
-                                const result = await sendCommand('Network.getResponseBody', {
-                                    requestId
-                                })
-                                packet[requestId][0]["response"]["body"] = result.body 
-                                //console.log(params.requestId,requestId,result.body)
-                            }catch{}
-                            }
+                                    //try{
+                                    const result = await sendCommand('Network.getResponseBody', {
+                                        requestId
+                                    })
+                                    packet[loader_dict[params.loaderId]][requestId][0]["response"]["body"] = result.body 
+                                    //console.log(params.requestId,requestId,result.body)
+                                //}catch{}
+                                }
+                        }
                                 break
                 
                             }
@@ -167,24 +206,32 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     }
 
     if (changeInfo.status == 'complete' && !tab.url.match(url_filter)) {
-        console.log("완료 fetch 보내기", tab.url)
-        //push_page_list(tab.url)        
-        //  2 면 2번쨰 => 인덱스는 1
-
-        console.log("tab url", current_taburl)
-        console.log("완료되면 패킷 출력", packet)
-        packet = []
-        for (let packet_url in packet) {
-            if (packet_url != tab.url) {
-                delete packet[packet_url]
-            }
-        }
+        await setTimeout(() => {
+            //console.log("완료 fetch 보내기", tab.url)
+            console.log("tab url", current_taburl)
+            const print_index = link_list.lastIndexOf(tab.url)
+            if(print_index != -1)
+               {
+                    console.log("완료되면 패킷 출력", packet[print_index]) // 현재 페이지 url 로 전송
+                    for (var i=reset_index ;i<print_index-1;i++)
+                    {
+                        packet[i] = []
+                        reset_index = i
+                    }
+                    
+               } 
+        }, 10000);
     }
 
     else if (changeInfo.status != 'unloaded' && !tab.url.match(url_filter))
     {
         console.log(`tab(${tab.id}) ${tab.title} is not debugged`)
-        //console.log("")
+
+    }
+
+    else if (changeInfo.status != 'unloaded' && !tab.url.match(url_filter))
+    {
+        console.log(`tab(${tab.id}) ${tab.title} is not debugged`)
 
     }
     

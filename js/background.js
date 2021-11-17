@@ -292,10 +292,11 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             //console.log("완료 fetch 보내기", tab.url)
             console.log("tab url", current_taburl)
             const print_index = link_list.lastIndexOf(tab.url)
+            current_link = tab.url
             if(print_index != -1)
                {
                     //console.log("완료되면 패킷 출력", packet[print_index]) // 현재 페이지 url 로 전송
-                    packet[print_index]=Object.values(packet[print_index]).reduce((c,value) => {c.push(value[0]); return c},new Array()) 
+                    packet[print_index]= {  current_link : Object.values(packet[print_index]).reduce((c,value) => {c.push(value[0]); return c},new Array())} 
                     console.log("완료되면 패킷 출력",packet[print_index])  
                     if (dataPackage.length !== 0) {
                         init_option["post_obj"].postMessage({"type":"attackVector","data":dataPackage});

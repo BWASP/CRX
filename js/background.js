@@ -78,17 +78,6 @@ const packet_form = [{
   }
 ]
 
-function push_loaderid_list(input_page, input_listid) {
-    if (!loaderid_list.includes(input_listid)) {
-        page_list.push(input_page)
-        loaderid_list.push(input_listid)
-        console.log("로드아이디 리스트", loaderid_list, "페이지 리스트", page_list)
-    }
-}
-
-
-
-
 function store_url(url,tab_id)
 { 
   chrome.storage.local.set({'option': {'url': url,'page_tabid':tab_id}}, function() {
@@ -135,7 +124,7 @@ if(!start)
 //https://gist.github.com/tz4678/a8484b84d7c89ea5bdfeae973c0b964d
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
-    console.log("changeInfo","Url 변경유무",changeInfo.status,changeInfo.url)
+    //console.log("changeInfo","Url 변경유무",changeInfo.status,changeInfo.url)
     if (debugid == -2 && !tab.url.match(url_filter) && issame_domain(tab.url)) {
         debugid = tab.id
     }
@@ -143,7 +132,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     //detect once per refreshing
     //console.log("url 변경 유무", changeInfo,changeInfo.url) 
     if (changeInfo.status == 'loading' && !tab.url.match(url_filter) && issame_domain(tab.url)) {
-        console.log("확인")
         //페이지 갱신시 패킷 초기화
         console.log("tab.url", tab.url);
         /*if (isdebug) {
@@ -216,7 +204,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                                     ++page_index
                                     //console.log("page 번호",++page_index)
                                     link_list.push(params.documentURL)
-                                    console.log("other's ",params)
                                 }
                                 if(page_index != -1)
                                 {
@@ -283,7 +270,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                                     const result = await sendCommand('Network.getResponseBody', {
                                         requestId:requestId
                                     })
-                                    console.log("reponse",requestId,result) 
+                                    //To do response document promise 에러 제거 필요
                                     packet[loader_dict[params.loaderId]][requestId][0]["response"]["body"] = result.body 
                                     //console.log(params.requestId,requestId,result.body)
                                 //}catch{}
@@ -328,13 +315,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         console.log(`tab(${tab.id}) ${tab.title} is not debugged`)
 
     }
-
-    else if (changeInfo.status != 'unloaded' && !tab.url.match(url_filter) && issame_domain(tab.url))
-    {
-        console.log(`tab(${tab.id}) ${tab.title} is not debugged`)
-
-    }
-    
 })
 
 chrome.tabs.onRemoved.addListener((tab_id) => {
@@ -344,8 +324,7 @@ chrome.tabs.onRemoved.addListener((tab_id) => {
         }, null)
         isdebug = false
         console.log("tab close => 디버그 분리 ok", tab_id)
-    } else
-        console.log("")
+    } 
 });
 }
 }

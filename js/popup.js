@@ -1,6 +1,7 @@
 // Get modules
 import {API as api, createKey, tableBuilder} from './jHelper.js';
 
+
 const elements = {
   vectors: ["URL", "Doubt", "Misc", "Methods"],
   packets: []
@@ -179,4 +180,30 @@ let dataPackage = [
     "misc": {}
   }
 ]
-window.onload = buildTable(dataPackage);
+
+
+
+
+function communicate_background(message)
+{
+  chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
+    let port = chrome.runtime.connect({
+      name: JSON.stringify({ "name":message , "init_option": {"url" : tabs[0].url ,"page_tabid" : tabs[0].id}})
+    });
+    port.postMessage("start detected")
+    port.onMessage.addListener(function(msg) {
+      console.log(msg)
+  });
+  });
+
+}
+    
+function start_setting(){
+  communicate_background("start")
+  }
+
+window.onload = function(){
+  document.getElementById("start").addEventListener("click",start_setting);
+  document.getElementById("stop").addEventListener("click",communicate_background("stop"));
+  buildTable(dataPackage);
+}

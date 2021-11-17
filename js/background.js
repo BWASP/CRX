@@ -122,6 +122,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
                                 if(params.initiator.type == "other")
                                 {
+                                    ++page_index
                                     //console.log("page 번호",++page_index)
                                     link_list.push(params.documentURL)
                                 }
@@ -220,7 +221,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                     }
                     
                } 
-        }, 10000);
+        }, 3000);
     }
 
     else if (changeInfo.status != 'unloaded' && !tab.url.match(url_filter))

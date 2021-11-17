@@ -140,50 +140,6 @@ function buildTable(dataPackage) {
 }
 
 // 페이지가 완전히 로딩된 후 함수 실행
-let dataPackage = [
-	{
-    "url": "http://testphp.vulnweb.com/admin.php",
-    "info": {
-      "allowMethod": ['GET','POST','OPTIONS'] // 없으면 제거
-    },
-    "doubt": {
-      "SQL injection": {
-        "type": ["login","search"]
-      },
-      "XSS": {
-        "type": ["board","search"],
-        "required": ["HttpOnly","X-Frame-Options"] // 탐지되면 추가 "HttpOnly", "X-Frame-Options" 리스트로 추가 
-      },
-      "Open Redirect": "https://naver.com/", // 없으면 제거 false면 제거
-      "File Upload": true // 없으면 제거 false면 제거
-    },
-    "misc": {
-      "robots.txt": true // 없으면 제거 false면 제거
-    }
-  },
-  {
-    "url": "http://testphp.vulnweb.com/login.php",
-    "info": {
-      "allowMethod": ['GET','POST','OPTIONS','PUT'] // 없으면 제거
-    },
-    "doubt": {
-      "SQL injection": {
-        "type": ["login","search"]
-      },
-      "XSS": {
-        "type": ["board","search"],
-        "required": ["HttpOnly","X-Frame-Options"] // 탐지되면 추가 "HttpOnly", "X-Frame-Options" 리스트로 추가 
-      },
-      "CORS": true, // 없으면 제거 false면 제거
-      "s3": ["????","??????????"],  // 없으면 제거
-    },
-    "misc": {}
-  }
-]
-
-
-
-
 function communicate_background(message)
 {
   chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
@@ -192,12 +148,13 @@ function communicate_background(message)
     });
     port.postMessage("start detected")
     port.onMessage.addListener(function(msg) {
-      console.log(msg)
+      if (msg.type == "attackVector") {
+        buildTable(msg.data);
+      }
+    });
   });
-  });
-
 }
-    
+
 function start_setting(){
   communicate_background("start")
   }
@@ -205,5 +162,4 @@ function start_setting(){
 window.onload = function(){
   document.getElementById("start").addEventListener("click",start_setting);
   document.getElementById("stop").addEventListener("click",communicate_background("stop"));
-  buildTable(dataPackage);
 }

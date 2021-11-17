@@ -37,8 +37,46 @@ const packet_form = [{
         "body": "",
         "status_code": ""
     }
-}]
-
+}], dataPackage = [
+	{
+    "url": "http://testphp.vulnweb.com/admin.php",
+    "info": {
+      "allowMethod": ['GET','POST','OPTIONS'] // 없으면 제거
+    },
+    "doubt": {
+      "SQL injection": {
+        "type": ["login","search"]
+      },
+      "XSS": {
+        "type": ["board","search"],
+        "required": ["HttpOnly","X-Frame-Options"] // 탐지되면 추가 "HttpOnly", "X-Frame-Options" 리스트로 추가 
+      },
+      "Open Redirect": "https://naver.com/", // 없으면 제거 false면 제거
+      "File Upload": true // 없으면 제거 false면 제거
+    },
+    "misc": {
+      "robots.txt": true // 없으면 제거 false면 제거
+    }
+  },
+  {
+    "url": "http://testphp.vulnweb.com/login.php",
+    "info": {
+      "allowMethod": ['GET','POST','OPTIONS','PUT'] // 없으면 제거
+    },
+    "doubt": {
+      "SQL injection": {
+        "type": ["login","search"]
+      },
+      "XSS": {
+        "type": ["board","search"],
+        "required": ["HttpOnly","X-Frame-Options"] // 탐지되면 추가 "HttpOnly", "X-Frame-Options" 리스트로 추가 
+      },
+      "CORS": true, // 없으면 제거 false면 제거
+      "s3": ["????","??????????"],  // 없으면 제거
+    },
+    "misc": {}
+  }
+]
 
 function push_loaderid_list(input_page, input_listid) {
     if (!loaderid_list.includes(input_listid)) {
@@ -74,14 +112,11 @@ chrome.runtime.onConnect.addListener(function(port) {
         init_option["post_obj"].onMessage.addListener(function(msg) {
             console.log(msg)
         });
-     
     }
 });
-    
+
 
 // init_option["post_obj"].postMessage("어택벡터")
-    
-    
 
 
 function init(start){
@@ -266,6 +301,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                     //console.log("완료되면 패킷 출력", packet[print_index]) // 현재 페이지 url 로 전송
                     packet[print_index]=Object.values(packet[print_index]).reduce((c,value) => {c.push(value[0]); return c},new Array()) 
                     console.log("완료되면 패킷 출력",packet[print_index])  
+                    if (dataPackage.length !== 0) {
+                        init_option["post_obj"].postMessage({"type":"attackVector","data":dataPackage});
+                    }
                     for (var i=reset_index ;i<print_index-1;i++)
                     {
                         packet[i] = []

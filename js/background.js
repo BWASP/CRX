@@ -13,6 +13,16 @@ let loader_dict = {}
 let link_list = new Array()
 let sendpage_index = -1
 let reset_index = 0
+let post_obj
+
+let init_option=
+{
+    "start" : false,
+    "url" : "",
+    "url_domain" : "",
+    "page_tabid" : -1,
+    "post_obj" : null
+}
 
 const packet_form = [{
     "request": {
@@ -29,9 +39,6 @@ const packet_form = [{
     }
 }]
 
-function push_page_list(input_page) {
-
-}
 
 function push_loaderid_list(input_page, input_listid) {
     if (!loaderid_list.includes(input_listid)) {
@@ -42,6 +49,45 @@ function push_loaderid_list(input_page, input_listid) {
 }
 
 
+
+
+function store_url(url,tab_id)
+{ 
+  chrome.storage.local.set({'option': {'url': url,'page_tabid':tab_id}}, function() {
+  })
+
+}
+
+
+
+chrome.runtime.onConnect.addListener(function(port) {
+    port.name = JSON.parse(port.name)
+    if(port.name.name == "start")
+    {
+        init_option["post_obj"] = port
+        init_option["url"] = port.name.init_option.url
+        init_option["url_domain"] = new URL(init_option["url"]).origin
+        init_option["page_tabid"] = port.name.init_option.page_tabid
+        //store_url(init_option["page_tabid"],init_option["url"])
+        init(init_option["start"])
+        init_option["start"]=true
+        init_option["post_obj"].onMessage.addListener(function(msg) {
+            console.log(msg)
+        });
+     
+    }
+});
+    
+
+// init_option["post_obj"].postMessage("어택벡터")
+    
+    
+
+
+function init(start){
+
+if(!start)
+{
 //https://gist.github.com/tz4678/a8484b84d7c89ea5bdfeae973c0b964d
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
@@ -111,6 +157,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             chrome.debugger.sendCommand(
                 { tabId: tabId }, "Debugger.enable", {}, async () =>{    
                     chrome.debugger.onEvent.addListener(async (source, method, params) => {
+
                     //try {
                     switch (method) {
                         case 'Network.requestWillBeSent': {
@@ -204,6 +251,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                         }
                 })
                 await sendCommand('Network.enable')
+
             })
         }
     }
@@ -252,3 +300,8 @@ chrome.tabs.onRemoved.addListener((tab_id) => {
     } else
         console.log("")
 });
+}
+}
+
+//init()
+//stop 하면 모든 정보 초기화 구현

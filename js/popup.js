@@ -1,19 +1,18 @@
 // Get modules
 import {API as api, createKey, tableBuilder} from './jHelper.js';
 
+const elements = {
+  vectors: ["URL", "Doubt", "Misc", "Methods"],
+  packets: []
+}
 let stateHandler = {
     isVector: true
 },
-keyAndStrings = [
-    {
-        type: "packets",
-        viewString: "Packets"
-    },
-    {
-        type: "vectors",
-        viewString: "Attack Vectors"
-    }
-],
+keyAndStrings = 
+  {
+      type: "vectors",
+      viewString: "Attack Vectors"
+  },
 returnError = (errorMessage = ["No data", ""]) => {
     let condition = (typeof (errorMessage) !== "string");
     console.log(errorMessage, typeof (errorMessage), condition);
@@ -39,7 +38,7 @@ function buildTable(dataPackage) {
                 tbody: document.createElement("tbody")
             }
         },
-    currentState = keyAndStrings[Number(stateHandler.isVector)];
+    currentState = keyAndStrings;
 
     // Update title bar string and
     document.getElementById("pageTitle").innerHTML = currentState.viewString;
@@ -48,10 +47,6 @@ function buildTable(dataPackage) {
     // Initialize tablePlace DIV
     table.place.innerHTML = "";
 
-    // Toggle loading screen
-    document.getElementById("loadingProgress").classList.remove("d-none");
-    document.getElementById("resultNoData").classList.add("d-none");
-
     // Set default table classes
     table.elements.table.classList.add("table", "table-hover");
 
@@ -59,83 +54,24 @@ function buildTable(dataPackage) {
         let rowElement = {
                 parent: document.createElement("tr"),
                 child: {
-                    category: document.createElement("th"),
-                    URL: document.createElement("td"),
-                    action: {
-                        parent: document.createElement("td"),
-                        target: document.createElement("p"),
-                        method: document.createElement("p")
-                    },
-                    params: document.createElement("td"),
+                    URL: document.createElement("th"),
+                    // SQL Injection, XSS, CORS, ....
                     doubt: document.createElement("td"),
-                    method: {
-                        parent: document.createElement("td"),
-                        method: document.createElement("span")
-                    },
-                    impact: {
-                        parent: document.createElement("td"),
-                        rate: document.createElement("span")
-                    }
+                    // type: document.createElement("p")
+                    misc: document.createElement("td"),
+                    info: document.createElement("td"),
                 },
                 lineBreak: document.createElement("br")
-            },
-            impactRate = [["success", "Low"], ["warning", "Normal"], ["danger", "High"]];
-
-        // Build category
-        rowElement.child.category.innerText = (dataSet.category === 0)
-            ? "Auto"
-            : "Manual";
-        rowElement.child.category.classList.add("text-muted", "text-center", "small");
-        rowElement.parent.appendChild(rowElement.child.category);
+            }
 
         // Build URL
-        rowElement.child.URL.innerText = dataSet.url.url + dataSet.url.uri;
-        // rowElement.child.URL.classList.add("text-break");
+        rowElement.child.URL.innerText = dataSet.url;
         rowElement.parent.appendChild(rowElement.child.URL);
 
-        // Build action if present
-        if (dataSet.action.target.length !== 0) {
-            let target = document.createElement("p"),
-                method = document.createElement("p")
-            method.innerText = dataSet.action.type[0];
-            target.innerText = dataSet.action.target[0];
-
-            method.classList.add("badge", "bg-success", "text-uppercase", "me-2", "mb-1");
-            target.classList.add("mb-0");
-
-            rowElement.child.action.parent.append(
-                method,
-                target
-            );
-            rowElement.parent.appendChild(rowElement.child.action.parent);
-        } else {
-            rowElement.parent.appendChild(builder.dataNotPresent());
-        }
-
-        // Build params if present
         let paramSet = Array();
-        rowElement.child.params.classList.add("text-center");
-        dataSet.params.forEach((param) => {
-            if (param !== "") {
-                if (param.includes("=")) param = param.split("=")[0];
-                paramSet.push(param);
-            }
-        });
-
-        if (paramSet.length !== 0) {
-            paramSet.forEach((param) => {
-                let codeElement = document.createElement("code");
-                codeElement.innerText = param;
-                rowElement.child.params.appendChild(codeElement);
-                if (paramSet[paramSet.length - 1] !== param) rowElement.child.params.appendChild(builder.commaAsElement());
-            })
-            rowElement.parent.appendChild(rowElement.child.params);
-        } else {
-            rowElement.parent.appendChild(builder.dataNotPresent());
-        }
 
         // Build vulnerability doubt
-        paramSet = Object.keys(dataSet.vulnerability.type.doubt);
+        paramSet = Object.keys(dataSet.doubt);
         rowElement.child.doubt.classList.add("text-center");
         paramSet.forEach((param) => {
             let codeElement = document.createElement("code");
@@ -148,19 +84,42 @@ function buildTable(dataPackage) {
             : builder.dataNotPresent()
         );
 
-        // Build Method
-        rowElement.child.method.method.innerText = dataSet.method;
-        rowElement.child.method.method.classList.add("badge", "bg-success");
-        rowElement.child.method.parent.classList.add("text-center");
-        rowElement.child.method.parent.appendChild(rowElement.child.method.method);
-        rowElement.parent.appendChild(rowElement.child.method.parent);
+        // Build misc
+        paramSet = Object.keys(dataSet.misc);
+        rowElement.child.misc.classList.add("text-center");
+        let element = document.createElement("p");
+        element.innerText = "";
+        paramSet.forEach((param) => {
+          element.innerText += param;
+          if (paramSet[paramSet.length - 1] !== param) element.innerText += ",";
+          rowElement.child.misc.appendChild(element);
+        })
+        rowElement.parent.appendChild((paramSet.length !== 0)
+            ? rowElement.child.misc
+            : builder.dataNotPresent()
+        );
 
-        // Build Impact
-        rowElement.child.impact.rate.innerText = impactRate[dataSet.impactRate][1];
-        rowElement.child.impact.rate.classList.add("badge", "rounded-pill", `bg-${impactRate[dataSet.impactRate][0]}`, "small");
-        rowElement.child.impact.parent.classList.add("text-center");
-        rowElement.child.impact.parent.appendChild(rowElement.child.impact.rate);
-        rowElement.parent.appendChild(rowElement.child.impact.parent);
+        // Build info
+        paramSet = dataSet.info.allowMethod;
+        // rowElement.child.info.classList.add("badge", "bg-success");
+        rowElement.child.info.classList.add("text-center");
+        paramSet.forEach((param) => {
+          let codeElement = document.createElement("code");
+            codeElement.innerText = param;
+            rowElement.child.info.appendChild(codeElement);
+            if (paramSet[paramSet.length - 1] !== param) rowElement.child.info.appendChild(builder.commaAsElement());
+        })
+        rowElement.parent.appendChild((paramSet.length !== 0)
+          ? rowElement.child.info
+          : builder.dataNotPresent()
+        );  
+
+        // // Build Impact
+        // rowElement.child.impact.rate.innerText = impactRate[dataSet.impactRate][1];
+        // rowElement.child.impact.rate.classList.add("badge", "rounded-pill", `bg-${impactRate[dataSet.impactRate][0]}`, "small");
+        // rowElement.child.impact.parent.classList.add("text-center");
+        // rowElement.child.impact.parent.appendChild(rowElement.child.impact.rate);
+        // rowElement.parent.appendChild(rowElement.child.impact.parent);
 
         // Add current row to main tbody
         table.elements.tbody.append(rowElement.parent);
@@ -182,56 +141,42 @@ function buildTable(dataPackage) {
 // 페이지가 완전히 로딩된 후 함수 실행
 let dataPackage = [
 	{
-	"url": "http://testphp.vulnweb.com/admin.php",
-  "info": {
-    "allowMethod": [] // 없으면 제거
-  },
-  "doubt": {
-    "SQL injection": {
-      "type": [
-        "None"
-      ]
+    "url": "http://testphp.vulnweb.com/admin.php",
+    "info": {
+      "allowMethod": ['GET','POST','OPTIONS'] // 없으면 제거
     },
-    "XSS": {
-      "type": [
-        "None"
-      ],
-      "required": [] // 탐지되면 추가 "HttpOnly", "X-Frame-Options" 리스트로 추가 
+    "doubt": {
+      "SQL injection": {
+        "type": ["login","search"]
+      },
+      "XSS": {
+        "type": ["board","search"],
+        "required": ["HttpOnly","X-Frame-Options"] // 탐지되면 추가 "HttpOnly", "X-Frame-Options" 리스트로 추가 
+      },
+      "Open Redirect": "https://naver.com/", // 없으면 제거 false면 제거
+      "File Upload": true // 없으면 제거 false면 제거
     },
-    "CORS": false, // 없으면 제거 false면 제거
-    "Open Redirect": "url", // 없으면 제거 false면 제거
-    "s3": [],  // 없으면 제거
-    "File Upload": false // 없으면 제거 false면 제거
+    "misc": {
+      "robots.txt": true // 없으면 제거 false면 제거
+    }
   },
-  "misc": {
-    "robots.txt": false // 없으면 제거 false면 제거
-  }
-},
   {
-	"url": "http://testphp.vulnweb.com/login.php",
-  "info": {
-    "allowMethod": []
-  },
-  "doubt": {
-    "SQL injection": {
-      "type": [
-        "None"
-      ]
+    "url": "http://testphp.vulnweb.com/login.php",
+    "info": {
+      "allowMethod": ['GET','POST','OPTIONS','PUT'] // 없으면 제거
     },
-    "XSS": {
-      "type": [
-        "None"
-      ],
-      "required": []
+    "doubt": {
+      "SQL injection": {
+        "type": ["login","search"]
+      },
+      "XSS": {
+        "type": ["board","search"],
+        "required": ["HttpOnly","X-Frame-Options"] // 탐지되면 추가 "HttpOnly", "X-Frame-Options" 리스트로 추가 
+      },
+      "CORS": true, // 없으면 제거 false면 제거
+      "s3": ["????","??????????"],  // 없으면 제거
     },
-    "CORS": false,
-    "Open Redirect": "url",
-    "s3": [],
-    "File Upload": false
-  },
-  "misc": {
-    "robots.txt": false
-		 }
-	}
+    "misc": {}
+  }
 ]
 window.onload = buildTable(dataPackage);

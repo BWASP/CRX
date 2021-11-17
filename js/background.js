@@ -213,7 +213,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             const print_index = link_list.lastIndexOf(tab.url)
             if(print_index != -1)
                {
-                    console.log("완료되면 패킷 출력", packet[print_index]) // 현재 페이지 url 로 전송
+                    //console.log("완료되면 패킷 출력", packet[print_index]) // 현재 페이지 url 로 전송
+                    packet[print_index]=Object.values(packet[print_index]).reduce((c,value) => {c.push(value[0]); return c},new Array()) 
+                    console.log("완료되면 패킷 출력",packet[print_index])  
                     for (var i=reset_index ;i<print_index-1;i++)
                     {
                         packet[i] = []

@@ -125,6 +125,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                                     ++page_index
                                     //console.log("page 번호",++page_index)
                                     link_list.push(params.documentURL)
+                                    console.log("other's ",params)
                                 }
                                 if(page_index != -1)
                                 {
@@ -181,7 +182,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                             // if exists request 
                             
                             if (loader_dict.hasOwnProperty(params.loaderId)){
-                                if (!packet[loader_dict[params.loaderId]].hasOwnProperty(requestId)) {
+                                if (packet[loader_dict[params.loaderId]].hasOwnProperty(requestId)) {
                                     packet[loader_dict[params.loaderId]][requestId][0]["response"]["status_code"] = response.status
                                     //console.log(params.requestId,requestId,response.status)
                                     packet[loader_dict[params.loaderId]][requestId][0]["response"]["headers"] = Object.keys(response.headers).reduce((c, k) => (c[k.toLowerCase()] = response.headers[k], c), {});
@@ -189,8 +190,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
                                     //try{
                                     const result = await sendCommand('Network.getResponseBody', {
-                                        requestId
+                                        requestId:requestId
                                     })
+                                    console.log("reponse",requestId,result) 
                                     packet[loader_dict[params.loaderId]][requestId][0]["response"]["body"] = result.body 
                                     //console.log(params.requestId,requestId,result.body)
                                 //}catch{}

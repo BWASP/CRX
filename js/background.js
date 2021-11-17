@@ -96,7 +96,16 @@ function store_url(url,tab_id)
 
 }
 
+function issame_domain(url)
+{
+    if(init_option["url_domain"] == (new URL(url)).origin) 
+    {
+        return true
 
+    }
+    else 
+    return false
+}
 
 chrome.runtime.onConnect.addListener(function(port) {
     port.name = JSON.parse(port.name)
@@ -127,13 +136,13 @@ if(!start)
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
     console.log("changeInfo","Url 변경유무",changeInfo.status,changeInfo.url)
-    if (debugid == -2 && !tab.url.match(url_filter)) {
+    if (debugid == -2 && !tab.url.match(url_filter) && issame_domain(tab.url)) {
         debugid = tab.id
     }
 
     //detect once per refreshing
     //console.log("url 변경 유무", changeInfo,changeInfo.url) 
-    if (changeInfo.status == 'loading' && !tab.url.match(url_filter)) {
+    if (changeInfo.status == 'loading' && !tab.url.match(url_filter) && issame_domain(tab.url)) {
         console.log("확인")
         //페이지 갱신시 패킷 초기화
         console.log("tab.url", tab.url);
@@ -291,7 +300,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         }
     }
 
-    if (changeInfo.status == 'complete' && !tab.url.match(url_filter)) {
+    if (changeInfo.status == 'complete' && !tab.url.match(url_filter) && issame_domain(tab.url)) {
         await setTimeout(() => {
             //console.log("완료 fetch 보내기", tab.url)
             console.log("tab url", current_taburl)
@@ -314,13 +323,13 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         }, 3000);
     }
 
-    else if (changeInfo.status != 'unloaded' && !tab.url.match(url_filter))
+    else if (changeInfo.status != 'unloaded' && !tab.url.match(url_filter) && issame_domain(tab.url))
     {
         console.log(`tab(${tab.id}) ${tab.title} is not debugged`)
 
     }
 
-    else if (changeInfo.status != 'unloaded' && !tab.url.match(url_filter))
+    else if (changeInfo.status != 'unloaded' && !tab.url.match(url_filter) && issame_domain(tab.url))
     {
         console.log(`tab(${tab.id}) ${tab.title} is not debugged`)
 

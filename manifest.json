@@ -12,6 +12,13 @@
     },
     "options_page": "/html/options.html",
     "permissions": ["tabs","activeTab","debugger","scripting","cookies","declarativeContent","storage"],
-    "host_permissions": ["http://*/*","https://*/*"]
+    "host_permissions": ["http://*/*","https://*/*"],
+
+    "content_scripts": [
+      {
+        "matches": ["http://*/","https://*/"],
+        "js": ["/js/content-script.js"]
+      }
+    ]
   
   }

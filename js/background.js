@@ -85,7 +85,7 @@ function store_url(url,tab_id)
 
 }
 
-function issame_domain(url)
+function issame_domain(url)  // 다시 return true 지워야 함
 {
     if(init_option["url_domain"] == (new URL(url)).origin) 
     {
@@ -113,14 +113,74 @@ chrome.runtime.onConnect.addListener(function(port) {
     }
 });
 
+class API {
+    constructor() {
+        this.API_url = "http://localhost:20202/"
+    }
+
+    /**
+     * Send data to API
+     * @param {string} endpoint
+     * @param {string} type POST
+     * @param {object} data null
+     */
+    requestCommunication(endpoint = this.API_url, type = "POST", data = null) {
+        fetch(endpoint, {
+            method: type,
+            cache: "no-cache",
+            headers: {
+                "Content-Type": "application/json",
+                "accept": "application/json"
+            },
+            body: JSON.stringify(data)
+        })
+            .then(blob => blob.json())
+            .then(res => {
+                console.log(res)
+            })
+            .catch(error => {
+                console.log(error)
+            })
+    }
+
+    /**
+     * Communicate with API
+     * @param {string} endpoint
+     */
+    responseCommunicate(endpoint = this.API_url) {
+        fetch(endpoint, {
+            method: "GET",
+            cache: "no-cache",
+            headers: {
+                "Content-Type": "application/json",
+                "accept": "application/json"
+            }
+        })
+            .then(blob => blob.json())
+            .then(res => {
+                console.log(res)
+            })
+            .catch(error => {
+                console.log(error)
+            })
+    }
+} 
+
+
 
 // init_option["post_obj"].postMessage("어택벡터")
+
 
 
 function init(start){
 
 if(!start)
 {
+    /*chrome.scripting.executeScript({
+        target: { tabId: init_option["page_tabid"] },
+        function: injectedFunction
+      }); */
+      send_toapi = new API  // api class instance generate
 //https://gist.github.com/tz4678/a8484b84d7c89ea5bdfeae973c0b964d
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
@@ -189,7 +249,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             chrome.debugger.sendCommand(
                 { tabId: tabId }, "Debugger.enable", {}, async () =>{    
                     chrome.debugger.onEvent.addListener(async (source, method, params) => {
-
                     //try {
                     switch (method) {
                         case 'Network.requestWillBeSent': {
@@ -198,23 +257,24 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                                 request
                             } = params
                             if(params.type == "Document"){
-
                                 if(params.initiator.type == "other")
                                 {
                                     ++page_index
+                                    //chrome.tabs.executeScript({tabId :source.tabId }, {code: 'document.documentElement.outerHTML'},function(result) {console.log("자바스크립트",result);})
                                     //console.log("page 번호",++page_index)
                                     link_list.push(params.documentURL)
+                                    console.log("Nope",params)
                                 }
                                 if(page_index != -1)
                                 {
                                     //console.log("Nope",params,params.initiator.type)//,params.type,"현재 url",params.initiator.url)
-                                    loader_dict[params.loaderId] = page_index
+                                    loader_dict[params.loaderId] = page_index            
                                     packet.push([])
                                     //packet.push([{}])
                                     //console.log("로더 딕트 입력",loader_dict)
 
                                 }
-                            }
+                            }   
                             //else
                               //  console.log("Yes",params,params.type,"현재 url",params.initiator.url)
 
@@ -240,7 +300,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                                 packet[loader_dict[params.loaderId]][requestId][0]["request"]["headers"] = Object.keys(request.headers).reduce((c, k) => (c[k.toLowerCase()] = request.headers[k], c), {});
                                 //console.log(params.requestId,JSON.stringify(request.headers))
                                 if (request.hasPostData)
-                                    packet[loader_dict[params.loaderId]][requestId][0]["request"]["body"] = request.postData
+                                        packet[loader_dict[params.loaderId]][requestId][0]["request"]["body"] = request.postData
                                 //console.log(params.requestId,requestId,request.postData)
 
                             }
@@ -257,7 +317,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                             } catch (e) {
                                 console.log("리퀘스트 아이디 에러 ", e)
                             }
-                            // if exists request 
+                            // if exists request
                             
                             if (loader_dict.hasOwnProperty(params.loaderId)){
                                 if (packet[loader_dict[params.loaderId]].hasOwnProperty(requestId)) {
@@ -271,8 +331,11 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                                         requestId:requestId
                                     })
                                     //To do response document promise 에러 제거 필요
-                                    packet[loader_dict[params.loaderId]][requestId][0]["response"]["body"] = result.body 
-                                    //console.log(params.requestId,requestId,result.body)
+                                    if(params.type != "Image")
+                                    {
+                                        packet[loader_dict[params.loaderId]][requestId][0]["response"]["body"] = result.body 
+                                    }
+                                        //console.log(params.requestId,requestId,result.body)
                                 //}catch{}
                                 }
                         }
@@ -292,20 +355,28 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             //console.log("완료 fetch 보내기", tab.url)
             console.log("tab url", current_taburl)
             const print_index = link_list.lastIndexOf(tab.url)
+            console.log("prin_index",print_index)
             current_link = tab.url
             if(print_index != -1)
                {
-                    //console.log("완료되면 패킷 출력", packet[print_index]) // 현재 페이지 url 로 전송
-                    packet[print_index]= {  current_link : Object.values(packet[print_index]).reduce((c,value) => {c.push(value[0]); return c},new Array())} 
-                    console.log("완료되면 패킷 출력",packet[print_index])  
+                    //console.log("완료되면 패킷 출력", packet[print_index]) // 현재 페이지 url 로 전송  
+                    const data = {}
+                    data[current_link] = Object.values(packet[print_index]).reduce((c,value) => {c.push(value[0]); return c},new Array())
+                    console.log("완료되면 패킷 출력",data)  
+                    console.log("api로 전송 시작")
+                    //await
+                    send_toapi.requestCommunication("http://localhost:20202/","POST",data)
+                    console.log("api 전송 완료")
                     if (dataPackage.length !== 0) {
                         init_option["post_obj"].postMessage({"type":"attackVector","data":dataPackage});
                     }
+                    
                     for (var i=reset_index ;i<print_index-1;i++)
                     {
                         packet[i] = []
                         reset_index = i
                     }
+                    
                     
                } 
         }, 3000);

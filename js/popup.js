@@ -101,16 +101,19 @@ function buildTable(dataPackage) {
         );
 
         // Build info
-        paramSet = dataSet.info.allowMethod;
+        let keySet = Object.keys(dataSet.info);
         // rowElement.child.info.classList.add("badge", "bg-success");
         rowElement.child.info.classList.add("text-center");
-        paramSet.forEach((param) => {
-          let codeElement = document.createElement("code");
-            codeElement.innerText = param;
-            rowElement.child.info.appendChild(codeElement);
-            if (paramSet[paramSet.length - 1] !== param) rowElement.child.info.appendChild(builder.commaAsElement());
+        keySet.forEach((key) => {
+          paramSet = dataSet.info[key];
+          paramSet.forEach((param) => {
+            let codeElement = document.createElement("code");
+              codeElement.innerText = param;
+              rowElement.child.info.appendChild(codeElement);
+              if (paramSet[paramSet.length - 1] !== param) rowElement.child.info.appendChild(builder.commaAsElement());
+          })
         })
-        rowElement.parent.appendChild((paramSet.length !== 0)
+        rowElement.parent.appendChild((keySet.length !== 0 && paramSet.length !== 0)
           ? rowElement.child.info
           : builder.dataNotPresent()
         );  

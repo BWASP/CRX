@@ -37,7 +37,9 @@ const packet_form = [{
         "body": "",
         "status_code": ""
     }
-}], dataPackage = [
+}];
+
+let dataPackage = [
 	{
     "url": "http://testphp.vulnweb.com/admin.php",
     "info": {
@@ -124,8 +126,8 @@ class API {
      * @param {string} type POST
      * @param {object} data null
      */
-    requestCommunication(endpoint = this.API_url, type = "POST", data = null) {
-        fetch(endpoint, {
+    async requestCommunication(endpoint = this.API_url, type = "POST", data = null) {
+        let response = await fetch(endpoint, {
             method: type,
             cache: "no-cache",
             headers: {
@@ -134,13 +136,14 @@ class API {
             },
             body: JSON.stringify(data)
         })
-            .then(blob => blob.json())
-            .then(res => {
-                console.log(res)
-            })
-            .catch(error => {
-                console.log(error)
-            })
+        return await response
+            // .then(blob => blob.json())
+            // .then(res => {
+            //     console.log(res)
+            // })
+            // .catch(error => {
+            //     console.log(error)
+            // })
     }
 
     /**
@@ -365,12 +368,20 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                     console.log("완료되면 패킷 출력",data)  
                     console.log("api로 전송 시작")
                     //await
-                    send_toapi.requestCommunication("http://localhost:20202/","POST",data)
-                    console.log("api 전송 완료")
-                    if (dataPackage.length !== 0) {
-                        init_option["post_obj"].postMessage({"type":"attackVector","data":dataPackage});
-                    }
-                    
+                    send_toapi.requestCommunication("http://localhost:20202/","POST",data).then(blob => blob.json())
+                    .then(res => {
+                        console.log(res)
+                        console.log("api 전송 완료")
+                        dataPackage = res
+                        if (dataPackage.length !== 0) {
+                            console.log(dataPackage)
+                            init_option["post_obj"].postMessage({"type":"attackVector","data":dataPackage});
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+
                     for (var i=reset_index ;i<print_index-1;i++)
                     {
                         packet[i] = []

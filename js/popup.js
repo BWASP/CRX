@@ -142,14 +142,12 @@ function buildTable(dataPackage) {
     document.getElementById("tablePlaceHolder").classList.remove("d-none");
 }
 
-// 페이지가 완전히 로딩된 후 함수 실행
+
 function communicate_background(message)
 {
   chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
-    let port = chrome.runtime.connect({
-      name: JSON.stringify({ "name":message , "init_option": {"url" : tabs[0].url ,"page_tabid" : tabs[0].id}})
-    });
-    port.postMessage("start detected")
+    let port = chrome.runtime.connect({name :message});
+    document.getElementById("start").addEventListener("click", port.postMessage({"type":"start","init_option": {"url" : tabs[0].url ,"page_tabid" : tabs[0].id}}));
     port.onMessage.addListener(function(msg) {
       if (msg.type == "attackVector") {
         buildTable(msg.data);
@@ -158,11 +156,8 @@ function communicate_background(message)
   });
 }
 
-function start_setting(){
-  communicate_background("start")
-  }
+communicate_background("popup");
+ //document.getElementById("stop").addEventListener("click",communicate_background("stop"));
 
-window.onload = function(){
-  document.getElementById("start").addEventListener("click",start_setting);
-  document.getElementById("stop").addEventListener("click",communicate_background("stop"));
-}
+
+

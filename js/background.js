@@ -13,7 +13,6 @@ let loader_dict = {}
 let link_list = new Array()
 let sendpage_index = -1
 let reset_index = 0
-let post_obj
 
 let init_option=
 {
@@ -21,7 +20,8 @@ let init_option=
     "url" : "",
     "url_domain" : "",
     "page_tabid" : -1,
-    "post_obj" : null
+    "popup_port" : null,
+    "content_port" : null
 }
 
 const packet_form = [{
@@ -99,20 +99,33 @@ function issame_domain(url)  // 다시 return true 지워야 함
 }
 
 chrome.runtime.onConnect.addListener(function(port) {
-    port.name = JSON.parse(port.name)
-    if(port.name.name == "start")
+    switch(port.name)
     {
-        init_option["post_obj"] = port
-        init_option["url"] = port.name.init_option.url
-        init_option["url_domain"] = new URL(init_option["url"]).origin
-        init_option["page_tabid"] = port.name.init_option.page_tabid
-        //store_url(init_option["page_tabid"],init_option["url"])
-        init(init_option["start"])
-        init_option["start"]=true
-        init_option["post_obj"].onMessage.addListener(function(msg) {
-            console.log(msg)
-        });
+        case "popup":
+            init_option["popup_port"] = port //between popup.js background.js
+            init_option["popup_port"].onMessage.addListener(function(msg) {
+                if(msg.type == "start")
+                {    
+                    init_option["url"] = msg.init_option.url
+                    init_option["page_tabid"] = msg.init_option.page_tabid
+                    init_option["url_domain"] = new URL(init_option["url"]).origin
+                    //store_url(init_option["page_tabid"],init_option["url"])
+                    init(init_option["start"])         
+                    init_option["start"]=true
+                    
+                }
+            });
+            break
+        case "domsource" :
+            init_option["content_port"] = port
+            init_option["content_port"].onMessage.addListener(function(msg) {
+                if(msg.type == "retdomsource"){
+                  packet[msg.packet_index][msg.requestId][0]["response"]["body"] = msg.source 
+                }  
+            })
+           
     }
+
 });
 
 class API {
@@ -171,19 +184,15 @@ class API {
 
 
 
-// init_option["post_obj"].postMessage("어택벡터")
-
+// init_option["popup_port"].postMessage("어택벡터")
 
 
 function init(start){
 
 if(!start)
 {
-    /*chrome.scripting.executeScript({
-        target: { tabId: init_option["page_tabid"] },
-        function: injectedFunction
-      }); */
       send_toapi = new API  // api class instance generate
+
 //https://gist.github.com/tz4678/a8484b84d7c89ea5bdfeae973c0b964d
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
@@ -273,8 +282,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                                     //console.log("Nope",params,params.initiator.type)//,params.type,"현재 url",params.initiator.url)
                                     loader_dict[params.loaderId] = page_index            
                                     packet.push([])
-                                    //packet.push([{}])
-                                    //console.log("로더 딕트 입력",loader_dict)
+
 
                                 }
                             }   
@@ -291,7 +299,13 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                                 if (!packet[loader_dict[params.loaderId]].hasOwnProperty(requestId)) {
 
                                     packet[loader_dict[params.loaderId]][requestId] = JSON.parse(JSON.stringify(packet_form))
+                                    if(params.type == "Document" && params.initiator.type == "other")
+                                    {   
+                                        init_option["content_port"].postMessage({"type":"getdomsource" , "packet_index": loader_dict[params.loaderId] , "requestId": requestId ,"source":""})
+                                       
+                                    }
                                 }
+                                
     
                                 packet[loader_dict[params.loaderId]][requestId][0]["request"]["full_url"] = request.url
                                 request_url = new URL(request.url)
@@ -375,7 +389,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                         dataPackage = res
                         if (dataPackage.length !== 0) {
                             console.log(dataPackage)
-                            init_option["post_obj"].postMessage({"type":"attackVector","data":dataPackage});
+                            init_option["popup_port"].postMessage({"type":"attackVector","data":dataPackage});
                         }
                     })
                     .catch(error => {

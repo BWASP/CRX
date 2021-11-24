@@ -147,7 +147,7 @@ function communicate_background(message)
 {
   chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
     let port = chrome.runtime.connect({name :message});
-    document.getElementById("start").addEventListener("click", port.postMessage({"type":"start","init_option": {"url" : tabs[0].url ,"page_tabid" : tabs[0].id}}));
+    document.getElementById("start").addEventListener("click", function() {port.postMessage({"type":"start","init_option": {"url" : tabs[0].url ,"page_tabid" : tabs[0].id, "page_tab" : tabs[0]}})});
     port.onMessage.addListener(function(msg) {
       if (msg.type == "attackVector") {
         buildTable(msg.data);

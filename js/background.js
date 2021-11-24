@@ -18,6 +18,7 @@ let init_option = {
     "start": false,
     "url": "",
     "url_domain": "",
+    "page_tab" : new Object(),
     "page_tabid": -1,
     "popup_port": null,
     "content_port": null
@@ -104,6 +105,7 @@ chrome.runtime.onConnect.addListener(function(port) {
             init_option["popup_port"].onMessage.addListener(function(msg) {
                 if (msg.type == "start") {
                     init_option["url"] = msg.init_option.url
+                    init_option["page_tab"] = msg.init_option.page_tab
                     init_option["page_tabid"] = msg.init_option.page_tabid
                     init_option["url_domain"] = new URL(init_option["url"]).origin
                     //store_url(init_option["page_tabid"],init_option["url"])
@@ -189,41 +191,10 @@ function init(start) {
     if (!start) {
         send_toapi = new API // api class instance generate
 
-        //https://gist.github.com/tz4678/a8484b84d7c89ea5bdfeae973c0b964d
-        chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-
-            //console.log("changeInfo","Url 변경유무",changeInfo.status,changeInfo.url)
-            if (debugid == -2 && !tab.url.match(url_filter) && issame_domain(tab.url)) {
-                debugid = tab.id
-            }
-
-            //detect once per refreshing
-            //console.log("url 변경 유무", changeInfo,changeInfo.url) 
-            if (changeInfo.status == 'loading' && !tab.url.match(url_filter) && issame_domain(tab.url)) {
-                //페이지 갱신시 패킷 초기화
-                console.log("tab.url", tab.url);
-                /*if (isdebug) {
-                    chrome.debugger.detach({
-                        tabId: tab.id
-                    }, null)
-                    //console.log("페이지 갱신",tab.title)
-                    await new Promise((resolve, reject) => {
-                        chrome.debugger.attach({
-                            tabId: tab.id
-                        }, '1.3', result => {
-                            if (chrome.runtime.lastError) {
-                                reject(chrome.runtime.lastError)
-                            } else {
-                                resolve(result)
-                            }
-                        })
-                    })
-                    console.log("tab(", tab.id, ")", tab.title, "is now debugged")
-                } 
-                */
-                if (!isdebug) // && debugid == tab.id
-                {
-                    //console.log("tab(", tab.id, ")", tab.title, "디버그 부착")
+        const debugAttach = async function(tabId,changeInfo,tab)
+{
+		
+		//console.log("tab(", tab.id, ")", tab.title, "디버그 부착")
                     console.log("!!디버거 부착")
                     await new Promise((resolve, reject) => {
                         chrome.debugger.attach({
@@ -362,6 +333,47 @@ function init(start) {
                         await sendCommand('Network.enable')
 
                     })
+
+
+}
+
+    debugAttach(init_option["page_tabid"], undefined,  init_option["page_tab"] )
+
+        //https://gist.github.com/tz4678/a8484b84d7c89ea5bdfeae973c0b964d
+        chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+
+            //console.log("changeInfo","Url 변경유무",changeInfo.status,changeInfo.url)
+            if (debugid == -2 && !tab.url.match(url_filter) && issame_domain(tab.url)) {
+                debugid = tab.id
+            }
+
+            //detect once per refreshing
+            //console.log("url 변경 유무", changeInfo,changeInfo.url) 
+            if (changeInfo.status == 'loading' && !tab.url.match(url_filter) && issame_domain(tab.url)) {
+                //페이지 갱신시 패킷 초기화
+                console.log("tab.url", tab.url);
+                /*if (isdebug) {
+                    chrome.debugger.detach({
+                        tabId: tab.id
+                    }, null)
+                    //console.log("페이지 갱신",tab.title)
+                    await new Promise((resolve, reject) => {
+                        chrome.debugger.attach({
+                            tabId: tab.id
+                        }, '1.3', result => {
+                            if (chrome.runtime.lastError) {
+                                reject(chrome.runtime.lastError)
+                            } else {
+                                resolve(result)
+                            }
+                        })
+                    })
+                    console.log("tab(", tab.id, ")", tab.title, "is now debugged")
+                } 
+                */
+                if (!isdebug) // && debugid == tab.id
+                {
+                    debugAttach(tabId, changeInfo, tab)
                 }
             }
 
@@ -370,6 +382,7 @@ function init(start) {
                     //console.log("완료 fetch 보내기", tab.url)
                     console.log("tab url", current_taburl)
                     const print_index = link_list.lastIndexOf(tab.url)
+                    //const print_index = link_list.IndexOf(tab.url,print_index)
                     console.log("prin_index", print_index)
                     current_link = tab.url
                     if (print_index != -1) {

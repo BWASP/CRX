@@ -75,6 +75,7 @@ let dataPackage = [{
             "CORS": true, // 없으면 제거 false면 제거
             "s3": ["????", "??????????"], // 없으면 제거
         },
+        "param":["uid","upw","level"],
         "misc": {}
     }
 ]
@@ -397,8 +398,6 @@ function init(start) {
                         //await
                         send_toapi.requestCommunication("http://localhost:20202/", "POST", data).then(blob => blob.json())
                             .then(res => {
-                                console.log(res)
-                                console.log("api 전송 완료")
                                 dataPackage = res
                                 if (dataPackage.length !== 0) {
                                     console.log(dataPackage)
@@ -406,7 +405,13 @@ function init(start) {
                                         "type": "attackVector",
                                         "data": dataPackage
                                     });
+                                    console.log("content_port data send");
+                                    init_option["content_port"].postMessage({
+                                        "type":"attackVector",
+                                        "data": dataPackage
+                                    });
                                 }
+                                console.log("api 전송 완료")
                             })
                             .catch(error => {
                                 console.log(error)

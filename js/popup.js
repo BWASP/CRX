@@ -1,9 +1,8 @@
 // Get modules
 import {API as api, createKey, tableBuilder} from './jHelper.js';
 
-
 const elements = {
-  vectors: ["URL", "Doubt", "Misc", "Methods"],
+  vectors: ["URL", "Doubt", "Params", "Misc", "Methods"],
   packets: []
 }
 let stateHandler = {
@@ -58,7 +57,7 @@ function buildTable(dataPackage) {
                     URL: document.createElement("th"),
                     // SQL Injection, XSS, CORS, ....
                     doubt: document.createElement("td"),
-                    // type: document.createElement("p")
+                    param: document.createElement("td"),
                     misc: document.createElement("td"),
                     info: document.createElement("td"),
                 },
@@ -84,6 +83,24 @@ function buildTable(dataPackage) {
             ? rowElement.child.doubt
             : builder.dataNotPresent()
         );
+
+        // Build Parameters
+        if (Object.keys(dataSet).includes("param")) {
+          paramSet = dataSet.param;
+          rowElement.child.param.classList.add("text-center");
+          paramSet.forEach((param) => {
+              let codeElement = document.createElement("code");
+              codeElement.innerText = param;
+              rowElement.child.param.appendChild(codeElement);
+              if (paramSet[paramSet.length - 1] !== param) rowElement.child.param.appendChild(builder.commaAsElement());
+          })
+          rowElement.parent.appendChild((paramSet.length !== 0)
+              ? rowElement.child.param
+              : builder.dataNotPresent()
+          );
+        } else {
+          rowElement.parent.appendChild(builder.dataNotPresent());
+        }
 
         // Build misc
         paramSet = Object.keys(dataSet.misc);
@@ -158,6 +175,3 @@ function communicate_background(message)
 
 communicate_background("popup");
  //document.getElementById("stop").addEventListener("click",communicate_background("stop"));
-
-
-

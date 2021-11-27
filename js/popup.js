@@ -1,6 +1,7 @@
 // Get modules
 import {API as api, createKey, tableBuilder} from './jHelper.js';
 
+
 const elements = {
   vectors: ["URL", "Doubt", "Params", "Misc", "Methods"],
   packets: []
@@ -83,9 +84,8 @@ function buildTable(dataPackage) {
             ? rowElement.child.doubt
             : builder.dataNotPresent()
         );
-
-        // Build Parameters
-        if (Object.keys(dataSet).includes("param")) {
+         // Build Parameters
+         if (Object.keys(dataSet).includes("param")) {
           paramSet = dataSet.param;
           rowElement.child.param.classList.add("text-center");
           paramSet.forEach((param) => {
@@ -101,7 +101,6 @@ function buildTable(dataPackage) {
         } else {
           rowElement.parent.appendChild(builder.dataNotPresent());
         }
-
         // Build misc
         paramSet = Object.keys(dataSet.misc);
         rowElement.child.misc.classList.add("text-center");
@@ -160,11 +159,35 @@ function buildTable(dataPackage) {
 }
 
 
+async function checkserver()
+{
+
+  let return_value = true
+  let is_api_open = true
+  let is_server_open = true
+
+  await fetch("http://127.0.0.1:20102", {"method": "HEAD"}).catch( (e) => { is_api_open = false } );
+  await fetch("http://127.0.0.1:20202", {"method": "HEAD"}).catch( (e) => {is_server_open = false});
+  console.log("after fetch",is_api_open,is_server_open)
+    if(!is_api_open)
+    {
+      document.getElementById("pageTitle").innerHTML="<br>plz turn on <strong>api server</strong> http://127.0.0.1:20102"
+      return_value=false
+    }
+    if(!is_server_open)
+    {
+      document.getElementById("pageTitle").innerHTML+="<br>plz turn on <strong>web sever</strong> http://127.0.0.1:20202"
+      return_value= false
+    }
+  return return_value
+
+}
 function communicate_background(message)
 {
   chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
     let port = chrome.runtime.connect({name :message});
-    document.getElementById("start").addEventListener("click", function() {port.postMessage({"type":"start","init_option": {"url" : tabs[0].url ,"page_tabid" : tabs[0].id, "page_tab" : tabs[0]}})});
+    document.getElementById("start").addEventListener("click", function() { checkserver().then((check)=> {if (check){ console.log("check server true"); port.postMessage({"type":"start","init_option": {"url" : tabs[0].url ,"page_tabid" : tabs[0].id, "page_tab" : tabs[0]}})}})});
+    document.getElementById("stop").addEventListener("click", function() {port.postMessage({"type":"stop"})});
     port.onMessage.addListener(function(msg) {
       if (msg.type == "attackVector") {
         buildTable(msg.data);
@@ -172,6 +195,8 @@ function communicate_background(message)
     });
   });
 }
+
+
 
 communicate_background("popup");
  //document.getElementById("stop").addEventListener("click",communicate_background("stop"));

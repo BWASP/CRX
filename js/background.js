@@ -1,7 +1,6 @@
 //도메인 필터링 로컬 스토리지 해서 추가
 const url_filter = "chrome://|chrome-extension://"
 let isdebug = false
-let current_taburl = ""
 //let cur_documentURL = ""
 let debugid = -2
 let packet = []
@@ -95,7 +94,6 @@ let dataPackage = [{
 function init_variable()
 {
     isdebug = false
-    current_taburl = ""
     debugid = -2
     packet = []
     page_list = new Array()
@@ -282,7 +280,6 @@ const debugAttach = async function (tabId, changeInfo, tab) {
     console.log(`tab(${tab.id})${tab.title}is now debugged`)
     isdebug = true
     debugid = tab.id
-    current_taburl = tab.url
 
     const sendCommand = (method, params) => new Promise((resolve, reject) => {
         chrome.debugger.sendCommand({
@@ -309,7 +306,7 @@ const debugAttach = async function (tabId, changeInfo, tab) {
                         request
                     } = params
                     if (params.type == "Document") {
-                        if (params.initiator.type == "other") {
+                        if (params.initiator.type == "other" || (params.initiator.type == "script" && params.initiator.stack.callFrames[0].functionName == 'onclick') ) {
                             ++page_index
                             //chrome.tabs.executeScript({tabId :source.tabId }, {code: 'document.documentElement.outerHTML'},function(result) {console.log("자바스크립트",result);})
                             //console.log("page 번호",++page_index)
@@ -317,6 +314,7 @@ const debugAttach = async function (tabId, changeInfo, tab) {
                             attackvector_list.push([])
                             console.log("Nope", params)
                         }
+
                         if (page_index != -1) {
                             //console.log("Nope",params,params.initiator.type)//,params.type,"현재 url",params.initiator.url)
                             loader_dict[params.loaderId] = page_index
@@ -338,7 +336,8 @@ const debugAttach = async function (tabId, changeInfo, tab) {
                         if (!packet[loader_dict[params.loaderId]].hasOwnProperty(requestId)) {
 
                             packet[loader_dict[params.loaderId]][requestId] = JSON.parse(JSON.stringify(packet_form))
-                            if (params.type == "Document" && params.initiator.type == "other") {
+                            if (params.type == "Document" && (params.initiator.type == "other" ||  ( params.initiator.type == "script" && params.initiator.stack.callFrames[0].functionName == 'onclick')))
+                            {
 
                                 init_option["document_url"]  = params.documentURL
                                 init_option["document_packet_index"] = loader_dict[params.loaderId]
@@ -467,10 +466,9 @@ listener_function["tabs_onUpdatded"] = async (tabId, changeInfo, tab) => {
 
         await setTimeout(() => {
             //console.log("완료 fetch 보내기", tab.url)
-            console.log("tab url", current_taburl)
             const print_index = link_list.lastIndexOf(tab.url)
             //const print_index = link_list.IndexOf(tab.url,print_index)
-            console.log("prin_index", print_index)
+            console.log("print_index", print_index)
             current_link = tab.url
             if (print_index != -1) {
                 //console.log("완료되면 패킷 출력", packet[print_index]) // 현재 페이지 url 로 전송  

@@ -22,7 +22,10 @@ let init_option = {
     "page_tabid": -1,
     "debug_tabid": -1,
     "popup_port": null,
-    "content_port": null
+    "content_port": null,
+    "document_url": undefined,
+    "document_packet_index" : -1,
+    "document_requestId" : -1
 }
 
 let listener_function = {
@@ -109,6 +112,9 @@ function init_variable()
     init_option["debug_tabid"] = -1,
     init_option["popup_port"] = null,
     init_option["content_port"] = null
+    init_option["document_url"]= undefined,
+    init_option["document_packet_index"]= -1,
+    init_option["document_requestId"] =  -1
     listener_function["tabs_onUpdated"] = undefined
     listener_function["tabs_onRemoved"] = undefined
 }
@@ -314,12 +320,17 @@ const debugAttach = async function (tabId, changeInfo, tab) {
 
                             packet[loader_dict[params.loaderId]][requestId] = JSON.parse(JSON.stringify(packet_form))
                             if (params.type == "Document" && params.initiator.type == "other") {
-                                init_option["content_port"].postMessage({
+
+                                init_option["document_url"]  = tab.url
+                                init_option["document_packet_index"] = loader_dict[params.loaderId]
+                                init_option["document_requestId"] = requestId
+                                /*init_option["content_port"].postMessage({
                                     "type": "getdomsource",
                                     "packet_index": loader_dict[params.loaderId],
                                     "requestId": requestId,
                                     "source": ""
-                                })
+                                })*/
+                                
 
                             }
                         }
@@ -423,6 +434,18 @@ listener_function["tabs_onUpdatded"] = async (tabId, changeInfo, tab) => {
     }
 
     if (changeInfo.status == 'complete' && !tab.url.match(url_filter) && issame_domain(tab.url)) {
+        
+        if (init_option["document_url"] == tab.url) {
+            init_option["content_port"].postMessage({
+                "type": "getdomsource",
+                "packet_index": init_option["document_packet_index"],
+                "requestId": init_option["document_requestId"],
+                "source": ""
+            })
+
+        }
+    
+
         await setTimeout(() => {
             //console.log("완료 fetch 보내기", tab.url)
             console.log("tab url", current_taburl)

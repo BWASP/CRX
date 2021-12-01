@@ -112,7 +112,7 @@ function init_variable()
     init_option["page_tab"] = new Object(),
     init_option["page_tabid"] = -1,
     init_option["debug_tabid"] = -1,
-    init_option["popup_port"] = null,
+    //init_option["popup_port"] = null,
     init_option["content_port"] = null
     init_option["document_url"]= undefined,
     init_option["document_packet_index"]= -1,
@@ -301,7 +301,7 @@ const debugAttach = async function (tabId, changeInfo, tab) {
         tabId: tabId
     }, "Debugger.enable", {}, async () => {
         chrome.debugger.onEvent.addListener(async (source, method, params) => {
-            //try {
+            try {
             switch (method) {
                 case 'Network.requestWillBeSent': {
                     const {
@@ -400,13 +400,13 @@ const debugAttach = async function (tabId, changeInfo, tab) {
                                 packet[loader_dict[params.loaderId]][requestId][0]["response"]["body"] = result.body
                             }
                             //console.log(params.requestId,requestId,result.body)
-                            //}catch{}
+                            }
                         }
                     }
                     break
 
                 }
-            }
+            }catch{}
         })
         await sendCommand('Network.enable')
 
@@ -488,10 +488,10 @@ listener_function["tabs_onUpdatded"] = async (tabId, changeInfo, tab) => {
                         attackvector_list[page_index] = res
                         if (dataPackage.length !== 0) {
                             console.log(dataPackage)
-                            init_option["popup_port"].postMessage({
+                            try{init_option["popup_port"].postMessage({
                                 "type": "attackVector",
                                 "data": dataPackage
-                            });
+                            });}catch{} // if popup is not open 
                             console.log("content_port data send");
                                     init_option["content_port"].postMessage({
                                         "type":"attackVector",

@@ -3,11 +3,11 @@ function toastInit(){
         parent: document.createElement("div"),
         container: document.createElement("div")
     }
-    toastContainer.parent.classList.add("position-relative");
+    toastContainer.parent.classList.add("bwasp-position-relative");
     toastContainer.parent.setAttribute("aria-live","polite");
     toastContainer.parent.setAttribute("aria-atomic","true");
 
-    toastContainer.container.classList.add("toast-container", "position-fixed", "bottom-0", "end-0", "p-3");
+    toastContainer.container.classList.add("bwasp-toast-container", "bwasp-position-fixed", "bwasp-bottom-0", "bwasp-end-0", "bwasp-p-3");
     toastContainer.container.setAttribute("z-index","11");
     toastContainer.container.setAttribute("id","toast-container");
     toastContainer.parent.appendChild(toastContainer.container);
@@ -24,16 +24,16 @@ function toastBuilder(msg){
         }
     }
 
-    toastElement.parent.classList.add("toast", "text-white", "bg-danger");
+    toastElement.parent.classList.add("bwasp-toast", "bwasp-text-white", "bwasp-bg-danger");
     toastElement.parent.setAttribute("role","alert");
     toastElement.parent.setAttribute("aria-live","assertive");
     toastElement.parent.setAttribute("aria-atomic","true");
     toastElement.parent.setAttribute("data-bs-delay","4000");
 
-    toastElement.flex.parent.classList.add("d-flex");
-    toastElement.flex.body.classList.add("toast-body");
+    toastElement.flex.parent.classList.add("bwasp-d-flex");
+    toastElement.flex.body.classList.add("bwasp-toast-body");
     toastElement.flex.body.innerText = msg;
-    toastElement.flex.close.classList.add("btn-close","me-2","m-auto");
+    toastElement.flex.close.classList.add("bwasp-btn-close","bwasp-me-2","bwasp-m-auto");
     toastElement.flex.close.setAttribute("type","button");
     toastElement.flex.close.setAttribute("data-bs-dismiss","toast");
     toastElement.flex.close.setAttribute("aria-label","Close");

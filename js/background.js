@@ -11,6 +11,7 @@ let request_list = new Array()
 let page_index = -1 // integer
 let loader_dict = {}
 let link_list = new Array()
+let attackvector_list = new Array()
 let sendpage_index = -1
 let reset_index = 0
 
@@ -102,6 +103,7 @@ function init_variable()
     page_index = -1 // integer
     loader_dict = {}
     link_list = new Array()
+    attackvector_list = new Array()
     sendpage_index = -1
     reset_index = 0
     init_option["start"] = false,
@@ -144,6 +146,22 @@ chrome.runtime.onConnect.addListener(function (port) {
         case "popup":
             init_option["popup_port"] = port //between popup.js background.js
             init_option["popup_port"].onMessage.addListener(function (msg) {
+                if(init_option["start"] && msg.type == "curpage_url")
+                {
+                    const attackvector_index = link_list.lastIndexOf(msg.url)
+                    if(attackvector_index != -1)
+                    {
+                        if (attackvector_list[attackvector_index].length !== 0) {
+                            init_option["popup_port"].postMessage({
+                                "type": "attackVector",
+                                "data": attackvector_list[attackvector_index]
+                            });
+                        }
+                    }
+                    
+    
+                }
+
                 if (msg.type == "start") {
                     init_option["url"] = msg.init_option.url
                     init_option["page_tab"] = msg.init_option.page_tab
@@ -154,7 +172,7 @@ chrome.runtime.onConnect.addListener(function (port) {
                     init_option["start"] = true
 
                 }
-
+               
                 if (msg.type == "stop") {
                     if (init_option["start"]) {
                         if (isdebug)
@@ -296,6 +314,7 @@ const debugAttach = async function (tabId, changeInfo, tab) {
                             //chrome.tabs.executeScript({tabId :source.tabId }, {code: 'document.documentElement.outerHTML'},function(result) {console.log("자바스크립트",result);})
                             //console.log("page 번호",++page_index)
                             link_list.push(params.documentURL)
+                            attackvector_list.push([])
                             console.log("Nope", params)
                         }
                         if (page_index != -1) {
@@ -466,6 +485,7 @@ listener_function["tabs_onUpdatded"] = async (tabId, changeInfo, tab) => {
                 send_toapi.requestCommunication("http://localhost:20202/", "POST", data).then(blob => blob.json())
                     .then(res => {
                         dataPackage = res
+                        attackvector_list[page_index] = res
                         if (dataPackage.length !== 0) {
                             console.log(dataPackage)
                             init_option["popup_port"].postMessage({

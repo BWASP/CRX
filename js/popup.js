@@ -186,6 +186,7 @@ function communicate_background(message)
 {
   chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
     let port = chrome.runtime.connect({name :message});
+    port.postMessage({"type":"curpage_url","url" : tabs[0].url})
     document.getElementById("start").addEventListener("click", function() { checkserver().then((check)=> {if (check){ console.log("check server true"); port.postMessage({"type":"start","init_option": {"url" : tabs[0].url ,"page_tabid" : tabs[0].id, "page_tab" : tabs[0]}})}})});
     document.getElementById("stop").addEventListener("click", function() {port.postMessage({"type":"stop"})});
     port.onMessage.addListener(function(msg) {

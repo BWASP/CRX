@@ -340,7 +340,7 @@ const debugAttach = async function (tabId, changeInfo, tab) {
                             packet[loader_dict[params.loaderId]][requestId] = JSON.parse(JSON.stringify(packet_form))
                             if (params.type == "Document" && params.initiator.type == "other") {
 
-                                init_option["document_url"]  = tab.url
+                                init_option["document_url"]  = params.documentURL
                                 init_option["document_packet_index"] = loader_dict[params.loaderId]
                                 init_option["document_requestId"] = requestId
                                 /*init_option["content_port"].postMessage({

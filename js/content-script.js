@@ -20,7 +20,7 @@ function toastBuilder(msg){
         flex: {
         parent: document.createElement("div"),
         body: document.createElement("div"),
-        close: document.createElement("button")
+        // close: document.createElement("button")
         }
     }
 
@@ -33,12 +33,14 @@ function toastBuilder(msg){
     toastElement.flex.parent.classList.add("bwasp-d-flex");
     toastElement.flex.body.classList.add("bwasp-toast-body");
     toastElement.flex.body.innerText = msg;
-    toastElement.flex.close.classList.add("bwasp-btn-close","bwasp-me-2","bwasp-m-auto");
-    toastElement.flex.close.setAttribute("type","button");
-    toastElement.flex.close.setAttribute("data-bs-dismiss","toast");
-    toastElement.flex.close.setAttribute("aria-label","Close");
+    // toastElement.flex.close.classList.add("bwasp-btn-close","bwasp-me-2","bwasp-m-auto");
+    // toastElement.flex.close.setAttribute("type","button");
+    // toastElement.flex.close.setAttribute("data-bs-dismiss","toast");
+    // toastElement.flex.close.setAttribute("aria-label","Close");
 
-    toastElement.flex.parent.append(toastElement.flex.body,toastElement.flex.close)
+    // toastElement.flex.parent.append(toastElement.flex.body,toastElement.flex.close)
+    toastElement.flex.parent.appendChild(toastElement.flex.body) // test 용 추가
+
     toastElement.parent.appendChild(toastElement.flex.parent)
 
     return toastElement.parent

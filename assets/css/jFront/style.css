@@ -1,0 +1,27 @@
+:root{
+    --window-width: 800px;
+    --window-height: 500px;
+    --sizing-left-bar: 200px;
+}
+
+body{
+    width: var(--window-width);
+    height: var(--window-height);
+}
+
+iframe{
+    width: calc(var(--window-width) - var(--sizing-left-bar) - 10px);
+    height: var(--window-height);
+}
+
+.navigation {
+    width: var(--sizing-left-bar) !important;
+}
+
+.border-rounded {
+    border-radius: .5rem !important;
+}
+
+.separatedTab{
+    overflow: auto !important;
+}

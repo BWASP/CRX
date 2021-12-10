@@ -1,0 +1,19 @@
+/* Font-family */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700&display=swap');
+
+/* Common fonts */
+@font-face {
+    font-family: 'Vice City Sans Regular';
+    font-style: normal;
+    font-weight: normal;
+    src: local('Vice City Sans Regular'), url('../../fonts/ViceCitySans.woff') format('woff');
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400 !important;
+}
+
+.font-logo {
+    font-family: "Vice City Sans Regular", serif !important;
+}

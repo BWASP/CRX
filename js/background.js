@@ -24,8 +24,8 @@ let init_option = {
     "popup_port": null,
     "content_port": null,
     "document_url": undefined,
-    "document_packet_index" : -1,
-    "document_requestId" : -1
+    "document_packet_index": -1,
+    "document_requestId": -1
 }
 
 let listener_function = {
@@ -49,7 +49,6 @@ const packet_form = [{
 }];
 
 
-
 let dataPackage = [{
     "url": "http://testphp.vulnweb.com/admin.php",
     "info": {
@@ -70,29 +69,28 @@ let dataPackage = [{
         "robots.txt": true // 없으면 제거 false면 제거
     }
 },
-{
-    "url": "http://testphp.vulnweb.com/login.php",
-    "info": {
-        "allowMethod": ['GET', 'POST', 'OPTIONS', 'PUT'] // 없으면 제거
-    },
-    "doubt": {
-        "SQL injection": {
-            "type": ["login", "search"]
+    {
+        "url": "http://testphp.vulnweb.com/login.php",
+        "info": {
+            "allowMethod": ['GET', 'POST', 'OPTIONS', 'PUT'] // 없으면 제거
         },
-        "XSS": {
-            "type": ["board", "search"],
-            "required": ["HttpOnly", "X-Frame-Options"] // 탐지되면 추가 "HttpOnly", "X-Frame-Options" 리스트로 추가 
+        "doubt": {
+            "SQL injection": {
+                "type": ["login", "search"]
+            },
+            "XSS": {
+                "type": ["board", "search"],
+                "required": ["HttpOnly", "X-Frame-Options"] // 탐지되면 추가 "HttpOnly", "X-Frame-Options" 리스트로 추가
+            },
+            "CORS": true, // 없으면 제거 false면 제거
+            "s3": ["????", "??????????"], // 없으면 제거
         },
-        "CORS": true, // 없으면 제거 false면 제거
-        "s3": ["????", "??????????"], // 없으면 제거
-    },
-    "param":["uid","upw","level"],
-    "misc": {}
-}
+        "param": ["uid", "upw", "level"],
+        "misc": {}
+    }
 ]
 
-function init_variable()
-{
+function init_variable() {
     isdebug = false
     debugid = -2
     packet = []
@@ -105,16 +103,16 @@ function init_variable()
     sendpage_index = -1
     reset_index = 0
     init_option["start"] = false,
-    init_option["url"] = "",
-    init_option["url_domain"] = "",
-    init_option["page_tab"] = new Object(),
-    init_option["page_tabid"] = -1,
-    init_option["debug_tabid"] = -1,
-    //init_option["popup_port"] = null,
-    init_option["content_port"] = null
-    init_option["document_url"]= undefined,
-    init_option["document_packet_index"]= -1,
-    init_option["document_requestId"] =  -1
+        init_option["url"] = "",
+        init_option["url_domain"] = "",
+        init_option["page_tab"] = new Object(),
+        init_option["page_tabid"] = -1,
+        init_option["debug_tabid"] = -1,
+        //init_option["popup_port"] = null,
+        init_option["content_port"] = null
+    init_option["document_url"] = undefined,
+        init_option["document_packet_index"] = -1,
+        init_option["document_requestId"] = -1
     listener_function["tabs_onUpdated"] = undefined
     listener_function["tabs_onRemoved"] = undefined
 }
@@ -126,7 +124,8 @@ function store_url(url, tab_id) {
             'url': url,
             'page_tabid': tab_id
         }
-    }, function () { })
+    }, function () {
+    })
 
 }
 
@@ -144,11 +143,9 @@ chrome.runtime.onConnect.addListener(function (port) {
         case "popup":
             init_option["popup_port"] = port //between popup.js background.js
             init_option["popup_port"].onMessage.addListener(function (msg) {
-                if(init_option["start"] && msg.type == "curpage_url")
-                {
+                if (init_option["start"] && msg.type == "curpage_url") {
                     const attackvector_index = link_list.lastIndexOf(msg.url)
-                    if(attackvector_index != -1)
-                    {
+                    if (attackvector_index != -1) {
                         if (attackvector_list[attackvector_index].length !== 0) {
                             init_option["popup_port"].postMessage({
                                 "type": "attackVector",
@@ -156,8 +153,8 @@ chrome.runtime.onConnect.addListener(function (port) {
                             });
                         }
                     }
-                    
-    
+
+
                 }
 
                 if (msg.type == "start") {
@@ -170,11 +167,10 @@ chrome.runtime.onConnect.addListener(function (port) {
                     init_option["start"] = true
 
                 }
-               
+
                 if (msg.type == "stop") {
                     if (init_option["start"]) {
-                        if (isdebug)
-                        {
+                        if (isdebug) {
                             chrome.debugger.detach({
                                 tabId: init_option["debug_tabid"]
                             }, null)
@@ -183,13 +179,13 @@ chrome.runtime.onConnect.addListener(function (port) {
                         }
                         console.log("stop started")
                         //if (chrome.tabs.onUpdated.hasListener(listener_function["tabs_onUpdatded"]))
-                            chrome.tabs.onUpdated.removeListener(listener_function["tabs_onUpdatded"]);
+                        chrome.tabs.onUpdated.removeListener(listener_function["tabs_onUpdatded"]);
                         //if (chrome.tabs.onRemoved.hasLiistner(listener_function["tabs_onRemoved"]))
-                            chrome.tabs.onRemoved.removeListener(listener_function["tabs_onRemoved"]);
+                        chrome.tabs.onRemoved.removeListener(listener_function["tabs_onRemoved"]);
                         init_variable()
 
                         console.log("stop completed")
-                        
+
                     }
                 }
 
@@ -299,113 +295,113 @@ const debugAttach = async function (tabId, changeInfo, tab) {
     }, "Debugger.enable", {}, async () => {
         chrome.debugger.onEvent.addListener(async (source, method, params) => {
             try {
-            switch (method) {
-                case 'Network.requestWillBeSent': {
-                    const {
-                        requestId,
-                        request
-                    } = params
-                    if (params.type == "Document") {
-                        if (params.initiator.type == "other" || (params.initiator.type == "script" && params.initiator.stack.callFrames[0].functionName == 'onclick') ) {
-                            ++page_index
-                            //chrome.tabs.executeScript({tabId :source.tabId }, {code: 'document.documentElement.outerHTML'},function(result) {console.log("자바스크립트",result);})
-                            //console.log("page 번호",++page_index)
-                            link_list.push(params.documentURL)
-                            attackvector_list.push([])
-                            console.log("Nope", params)
-                        }
+                switch (method) {
+                    case 'Network.requestWillBeSent': {
+                        const {
+                            requestId,
+                            request
+                        } = params
+                        if (params.type == "Document") {
+                            if (params.initiator.type == "other" || (params.initiator.type == "script" && params.initiator.stack.callFrames[0].functionName == 'onclick')) {
+                                ++page_index
+                                //chrome.tabs.executeScript({tabId :source.tabId }, {code: 'document.documentElement.outerHTML'},function(result) {console.log("자바스크립트",result);})
+                                //console.log("page 번호",++page_index)
+                                link_list.push(params.documentURL)
+                                attackvector_list.push([])
+                                console.log("Nope", params)
+                            }
 
-                        if (page_index != -1) {
-                            //console.log("Nope",params,params.initiator.type)//,params.type,"현재 url",params.initiator.url)
-                            loader_dict[params.loaderId] = page_index
-                            packet.push([])
+                            if (page_index != -1) {
+                                //console.log("Nope",params,params.initiator.type)//,params.type,"현재 url",params.initiator.url)
+                                loader_dict[params.loaderId] = page_index
+                                packet.push([])
 
-
-                        }
-                    }
-                    //else
-                    //  console.log("Yes",params,params.type,"현재 url",params.initiator.url)
-
-                    //request_list.push(requestId)
-                    //console.log("출력", requestId, "형태", typeof requestId)
-                    //console.log("loader id",params,params.loaderId,loader_dict,loader_dict[params.loaderId])
-                    //console.log("패킷 상태",packet)
-
-                    if (loader_dict.hasOwnProperty(params.loaderId)) { // Document 가 오지 않았을 떄는 무시
-
-                        if (!packet[loader_dict[params.loaderId]].hasOwnProperty(requestId)) {
-
-                            packet[loader_dict[params.loaderId]][requestId] = JSON.parse(JSON.stringify(packet_form))
-                            if (params.type == "Document" && (params.initiator.type == "other" ||  ( params.initiator.type == "script" && params.initiator.stack.callFrames[0].functionName == 'onclick')))
-                            {
-
-                                init_option["document_url"]  = params.documentURL
-                                init_option["document_packet_index"] = loader_dict[params.loaderId]
-                                init_option["document_requestId"] = requestId
-                                /*init_option["content_port"].postMessage({
-                                    "type": "getdomsource",
-                                    "packet_index": loader_dict[params.loaderId],
-                                    "requestId": requestId,
-                                    "source": ""
-                                })*/
-                                
 
                             }
                         }
+                        //else
+                        //  console.log("Yes",params,params.type,"현재 url",params.initiator.url)
+
+                        //request_list.push(requestId)
+                        //console.log("출력", requestId, "형태", typeof requestId)
+                        //console.log("loader id",params,params.loaderId,loader_dict,loader_dict[params.loaderId])
+                        //console.log("패킷 상태",packet)
+
+                        if (loader_dict.hasOwnProperty(params.loaderId)) { // Document 가 오지 않았을 떄는 무시
+
+                            if (!packet[loader_dict[params.loaderId]].hasOwnProperty(requestId)) {
+
+                                packet[loader_dict[params.loaderId]][requestId] = JSON.parse(JSON.stringify(packet_form))
+                                if (params.type == "Document" && (params.initiator.type == "other" || (params.initiator.type == "script" && params.initiator.stack.callFrames[0].functionName == 'onclick'))) {
+
+                                    init_option["document_url"] = params.documentURL
+                                    init_option["document_packet_index"] = loader_dict[params.loaderId]
+                                    init_option["document_requestId"] = requestId
+                                    /*init_option["content_port"].postMessage({
+                                        "type": "getdomsource",
+                                        "packet_index": loader_dict[params.loaderId],
+                                        "requestId": requestId,
+                                        "source": ""
+                                    })*/
 
 
-                        packet[loader_dict[params.loaderId]][requestId][0]["request"]["full_url"] = request.url
-                        request_url = new URL(request.url)
-                        packet[loader_dict[params.loaderId]][requestId][0]["request"]["url"] = request_url.pathname + request_url.search + request_url.hash
-                        //console.log(params.requestId,requestId,request.url)
-                        packet[loader_dict[params.loaderId]][requestId][0]["request"]["method"] = request.method
-                        //console.log(params.requestId,requestId,request.method)
-                        lower_header = request.headers
-                        packet[loader_dict[params.loaderId]][requestId][0]["request"]["headers"] = Object.keys(request.headers).reduce((c, k) => (c[k.toLowerCase()] = request.headers[k], c), {});
-                        //console.log(params.requestId,JSON.stringify(request.headers))
-                        if (request.hasPostData)
-                            packet[loader_dict[params.loaderId]][requestId][0]["request"]["body"] = request.postData
-                        //console.log(params.requestId,requestId,request.postData)
+                                }
+                            }
 
+
+                            packet[loader_dict[params.loaderId]][requestId][0]["request"]["full_url"] = request.url
+                            request_url = new URL(request.url)
+                            packet[loader_dict[params.loaderId]][requestId][0]["request"]["url"] = request_url.pathname + request_url.search + request_url.hash
+                            //console.log(params.requestId,requestId,request.url)
+                            packet[loader_dict[params.loaderId]][requestId][0]["request"]["method"] = request.method
+                            //console.log(params.requestId,requestId,request.method)
+                            lower_header = request.headers
+                            packet[loader_dict[params.loaderId]][requestId][0]["request"]["headers"] = Object.keys(request.headers).reduce((c, k) => (c[k.toLowerCase()] = request.headers[k], c), {});
+                            //console.log(params.requestId,JSON.stringify(request.headers))
+                            if (request.hasPostData)
+                                packet[loader_dict[params.loaderId]][requestId][0]["request"]["body"] = request.postData
+                            //console.log(params.requestId,requestId,request.postData)
+
+                        }
+
+                        break
                     }
+                    case 'Network.responseReceived': {
+                        const {
+                            requestId,
+                            response
+                        } = params
+                        try {
+                            let response_requestId = requestId
+                        } catch (e) {
+                            console.log("리퀘스트 아이디 에러 ", e)
+                        }
+                        // if exists request
 
-                    break
+                        if (loader_dict.hasOwnProperty(params.loaderId)) {
+                            if (packet[loader_dict[params.loaderId]].hasOwnProperty(requestId)) {
+                                packet[loader_dict[params.loaderId]][requestId][0]["response"]["status_code"] = response.status
+                                //console.log(params.requestId,requestId,response.status)
+                                packet[loader_dict[params.loaderId]][requestId][0]["response"]["headers"] = Object.keys(response.headers).reduce((c, k) => (c[k.toLowerCase()] = response.headers[k], c), {});
+                                //console.log(params.requestId,requestId,JSON.stringify(response.headers))
+
+                                //try{
+                                const result = await sendCommand('Network.getResponseBody', {
+                                    requestId: requestId
+                                })
+                                //To do response document promise 에러 제거 필요
+                                if (params.type != "Image") {
+                                    packet[loader_dict[params.loaderId]][requestId][0]["response"]["body"] = result.body
+                                }
+                                //console.log(params.requestId,requestId,result.body)
+                            }
+                        }
+                    }
+                        break
+
                 }
-                case 'Network.responseReceived': {
-                    const {
-                        requestId,
-                        response
-                    } = params
-                    try {
-                        let response_requestId = requestId
-                    } catch (e) {
-                        console.log("리퀘스트 아이디 에러 ", e)
-                    }
-                    // if exists request
-
-                    if (loader_dict.hasOwnProperty(params.loaderId)) {
-                        if (packet[loader_dict[params.loaderId]].hasOwnProperty(requestId)) {
-                            packet[loader_dict[params.loaderId]][requestId][0]["response"]["status_code"] = response.status
-                            //console.log(params.requestId,requestId,response.status)
-                            packet[loader_dict[params.loaderId]][requestId][0]["response"]["headers"] = Object.keys(response.headers).reduce((c, k) => (c[k.toLowerCase()] = response.headers[k], c), {});
-                            //console.log(params.requestId,requestId,JSON.stringify(response.headers))
-
-                            //try{
-                            const result = await sendCommand('Network.getResponseBody', {
-                                requestId: requestId
-                            })
-                            //To do response document promise 에러 제거 필요
-                            if (params.type != "Image") {
-                                packet[loader_dict[params.loaderId]][requestId][0]["response"]["body"] = result.body
-                            }
-                            //console.log(params.requestId,requestId,result.body)
-                            }
-                        }
-                    }
-                    break
-
-                }
-            }catch{}
+            } catch {
+            }
         })
         await sendCommand('Network.enable')
 
@@ -452,7 +448,6 @@ listener_function["tabs_onUpdatded"] = async (tabId, changeInfo, tab) => {
     }
 
     if (changeInfo.status == 'complete' && !tab.url.match(url_filter) && issame_domain(tab.url)) {
-        
         if (init_option["document_url"] == tab.url) {
             init_option["content_port"].postMessage({
                 "type": "getdomsource",
@@ -462,9 +457,9 @@ listener_function["tabs_onUpdatded"] = async (tabId, changeInfo, tab) => {
             })
 
         }
-    
 
-        await setTimeout(() => {
+
+        setTimeout(() => {
             //console.log("완료 fetch 보내기", tab.url)
             const print_index = link_list.lastIndexOf(tab.url)
             //const print_index = link_list.IndexOf(tab.url,print_index)
@@ -486,15 +481,18 @@ listener_function["tabs_onUpdatded"] = async (tabId, changeInfo, tab) => {
                         attackvector_list[page_index] = res
                         if (dataPackage.length !== 0) {
                             console.log(dataPackage)
-                            try{init_option["popup_port"].postMessage({
+                            try {
+                                init_option["popup_port"].postMessage({
+                                    "type": "attackVector",
+                                    "data": dataPackage
+                                });
+                            } catch {
+                            } // if popup is not open
+                            console.log("content_port data send");
+                            init_option["content_port"].postMessage({
                                 "type": "attackVector",
                                 "data": dataPackage
-                            });}catch{} // if popup is not open 
-                            console.log("content_port data send");
-                                    init_option["content_port"].postMessage({
-                                        "type":"attackVector",
-                                        "data": dataPackage
-                                    });
+                            });
                         }
                         console.log(res)
                         console.log("api 전송 완료")
@@ -528,7 +526,6 @@ listener_function["tabs_onRemoved"] = (tab_id) => {
         console.log("tab close => 디버그 분리 ok", tab_id)
     }
 }
-
 
 
 // init_option["popup_port"].postMessage("어택벡터")

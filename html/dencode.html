@@ -1,29 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="../css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="../DataTables/datatables.min.css"/>
+    <!-- Bootstrap -->
+    <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../assets/css/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- jFront for BWASP -->
+    <link href="../assets/css/jFront/style.css" rel="stylesheet">
+    <link href="../assets/css/jFront/sidebar.css" rel="stylesheet">
+    <link href="../assets/css/jFront/fonts.css" rel="stylesheet">
+    <link href="../assets/css/jFront/grid.css" rel="stylesheet">
+    <link href="../assets/css/jFront/content.css" rel="stylesheet">
+    <script type="module" src="../js/popup.js"></script>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        .nav { width: 15%; height: 70%; float: left; background: navy;}
-        .section { width: 70%; height: 50%; float: right; }
-    </style>
+    <meta name="viewport" content="width=device-with, initial-scale=1.0">
 </head>
 <body>
-    <nav class="nav">
-        <div class="row text-center" style="width: 100%">
-            <div style="width: 30%; float:none; margin:0 auto">
-                <h3 class="text-white"><strong>List</strong></h3>
-                <a href="./popup.html"><h5 class="text-white">Attack Vector</h5></a>
-                <a href="./Repeater.html"><h5 class="text-white">Repeater</h5></a>
-                <a href="./dencode.html"><h5 class="text-white">Encode Decode</h5></a>
+<aside id="leftSideBar" class="navigation ps-2 pe-2 pt-3 pb-4 sidebar shadow">
+    <section class="element-top sizer element-top center-horizontal">
+        <a class="text-decoration-none text-white sidebar-logo" href="./popup.html">
+            <h4 class="text-decoration-none text-dark mb-0 font-logo">BWASP</h4>
+            <p class="mb-0 text-muted small">Extension</p>
+        </a>
+    </section>
+    <section class="separatedTab">
+        <div class="sidebar-element">
+            <a href="./popup.html" class="rounded-custom" id="target-popup">
+                <i class="bi bi-search text-primary"></i>
+                Analysis
+            </a>
+        </div>
+        <div class="sidebar-element">
+            <p class="sidebar-category">Additional</p>
+            <a href="./Repeater.html" class="rounded-custom" id="target-Repeater">
+                <i class="bi bi-arrow-repeat text-primary"></i>
+                Repeater
+            </a>
+            <a href="./dencode.html" class="rounded-custom" id="target-dencode">
+                <i class="bi bi-arrow-left-right text-primary"></i>
+                Dencode
+            </a>
+        </div>
+    </section>
+</aside>
+<div class="p-4 pt-3 w-100">
+    <div id="topMainBar" class="d-inline-flex w-100 mb-3">
+        <div class="sizer element-top center-horizontal">
+            <div class="content-page-icon content-page-icon-sizing rounded-custom">
+                <i class="bi bi-arrow-left-right"></i>
+            </div>
+            <div>
+                <h4 class="text-decoration-none mb-0 font-logo" id="pageTitle">Dencode</h4>
+                <p class="mb-0 text-muted small" id="pageTitle_sub"></p>
             </div>
         </div>
-    </nav>
-    <section class="section">
-        <iframe src="https://dencode.com/" width="1000px" height="1000px"></iframe>
-    </section>
+        <div class="sizer element-top center-horizontal ms-auto"></div>
+    </div>
+    <div class="bg-white text-dark sizer element-objects separatedTab">
+        <iframe src="https://dencode.com/"></iframe>
+    </div>
+</div>
+
 </body>
 </html>

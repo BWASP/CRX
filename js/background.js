@@ -23,6 +23,7 @@ let init_option = {
     "debug_tabid": -1,
     "popup_port": null,
     "content_port": null,
+    "repeater_port": null,
     "document_url": undefined,
     "document_packet_index": -1,
     "document_requestId": -1
@@ -109,6 +110,7 @@ function init_variable() {
         init_option["page_tabid"] = -1,
         init_option["debug_tabid"] = -1,
         //init_option["popup_port"] = null,
+        init_optionn["repeater_port"] = null,
         init_option["content_port"] = null
     init_option["document_url"] = undefined,
         init_option["document_packet_index"] = -1,
@@ -197,8 +199,17 @@ chrome.runtime.onConnect.addListener(function (port) {
                 if (msg.type == "retdomsource") {
                     packet[msg.packet_index][msg.requestId][0]["response"]["body"] = msg.source
                 }
-            })
-
+            });
+            break
+        
+        case "repeater":
+            init_option["repeater_port"] = port
+            // init_option["repeater_port"].onMessage.addListener(function (msg) {
+            //     if (msg.type == "retdomsource") {
+            //         packet[msg.packet_index][msg.requestId][0]["response"]["body"] = msg.source
+            //     }
+            // });
+            break
     }
 
 });
@@ -474,6 +485,16 @@ listener_function["tabs_onUpdatded"] = async (tabId, changeInfo, tab) => {
                 }, new Array())
                 console.log("완료되면 패킷 출력", data)
                 console.log("api로 전송 시작")
+
+                try{
+                    init_option["repeater_port"].postMessage({
+                        "type": "RequestPackets",
+                        "data": data
+                    })
+                } catch {
+
+                }
+
                 //await
                 send_toapi.requestCommunication("http://localhost:20202/", "POST", data).then(blob => blob.json())
                     .then(res => {

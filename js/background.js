@@ -45,10 +45,11 @@ const packet_form = [{
     "response": {
         "headers": {},
         "body": "",
-        "status_code": ""
+        "status": "",
+        "statusText": "",
+        "protocol": "",
     }
 }];
-
 
 let dataPackage = [{
     "url": "http://testphp.vulnweb.com/admin.php",
@@ -312,6 +313,7 @@ const debugAttach = async function (tabId, changeInfo, tab) {
                             requestId,
                             request
                         } = params
+                        // console.log("Request!!!", request);
                         if (params.type == "Document") {
                             if (params.initiator.type == "other" || (params.initiator.type == "script" && params.initiator.stack.callFrames[0].functionName == 'onclick')) {
                                 ++page_index
@@ -382,6 +384,7 @@ const debugAttach = async function (tabId, changeInfo, tab) {
                             requestId,
                             response
                         } = params
+                        // console.log("Response!!!", response);
                         try {
                             let response_requestId = requestId
                         } catch (e) {
@@ -391,7 +394,9 @@ const debugAttach = async function (tabId, changeInfo, tab) {
 
                         if (loader_dict.hasOwnProperty(params.loaderId)) {
                             if (packet[loader_dict[params.loaderId]].hasOwnProperty(requestId)) {
-                                packet[loader_dict[params.loaderId]][requestId][0]["response"]["status_code"] = response.status
+                                packet[loader_dict[params.loaderId]][requestId][0]["response"]["status"] = response.status
+                                packet[loader_dict[params.loaderId]][requestId][0]["response"]["statusText"] = response.statusText
+                                packet[loader_dict[params.loaderId]][requestId][0]["response"]["protocol"] = response.protocol
                                 //console.log(params.requestId,requestId,response.status)
                                 packet[loader_dict[params.loaderId]][requestId][0]["response"]["headers"] = Object.keys(response.headers).reduce((c, k) => (c[k.toLowerCase()] = response.headers[k], c), {});
                                 //console.log(params.requestId,requestId,JSON.stringify(response.headers))
@@ -492,7 +497,7 @@ listener_function["tabs_onUpdatded"] = async (tabId, changeInfo, tab) => {
                         "data": data
                     })
                 } catch {
-
+                    
                 }
 
                 //await

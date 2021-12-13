@@ -1,4 +1,5 @@
 let init_option = new Object();
+
 function init_repeater(){
     init_option = {
         "background_port": chrome.runtime.connect({name: "repeater"}),
@@ -13,38 +14,35 @@ function init_repeater(){
     // init_option['response_area'].innerText = ""
 };
 
-function packet_decode(mode, packet) {
-    console.log(packet)
-    let keySet = Object.keys(packet);
-    let headerSet = Array();
-    let target = undefined;
+function header_parse(packet) {
+    let headerSet = Object.keys(packet["headers"]);
     let data = "";
-    console.log(keySet);
-    console.log("console log End...1");
+    headerSet.forEach((header) => {
+        data += header + ": " + JSON.stringify(packet["headers"][header]) + "\r\n";
+    });
+    return data;
+}
+
+function packet_parse(mode, packet) {
+    let data = "";
 
     switch (mode) {
         case "req":
-            target = "request_area"
+            data += packet['method'] + " " + packet['url'] + " " + "HTTP/1.1" + "\r\n";
+            data += "Host: " + packet["full_url"] + "\r\n";
+            data += header_parse(packet);
+            data += "\r\n" + packet["body"];
             break
+
         case "res":
-            target = "response_area"
+            console.log("response status: ", packet);
+            data += packet['protocol'] + " " + packet["status"] + " " + packet["statusText"] + "\r\n"
+            data += header_parse(packet);
+            data += "\r\n" + packet["body"];
             break
     }
 
-    keySet.forEach((key) => {
-        console.log(key);
-        console.log(packet[key]);
-        console.log("console log End...2");
-        if (key == "headers"){
-            headerSet = Object.keys(packet[key]);
-            headerSet.forEach((header) => {
-                data += header + ": " + JSON.stringify(packet[key][header]) + "\r\n";
-            });
-        } else {
-            data += key + ": " + JSON.stringify(packet[key]) + "\r\n";
-        }
-    });
-    init_option[target].value = data;
+    return data;
 }
 
 
@@ -65,7 +63,7 @@ init_option['background_port'].onMessage.addListener(function (msg) {
         });
 
         init_option['packet_list'] = init_option['packet_list'].concat(packetList);
-        packet_decode("req",init_option['packet_list'][init_option['packet_idx']]['request'])
-        packet_decode("res",init_option['packet_list'][init_option['packet_idx']]['response'])
+        init_option['request_area'].value = packet_parse("req",init_option['packet_list'][init_option['packet_idx']]['request'])
+        init_option['response_area'].value = packet_parse("res",init_option['packet_list'][init_option['packet_idx']]['response'])
     }
 });

@@ -3,7 +3,8 @@ const url_filter = "chrome://|chrome-extension://"
 let isdebug = false
 //let cur_documentURL = ""
 let debugid = -2
-let packet = []
+let packet = [];
+let repeater_packet = [];
 let page_list = new Array()
 let request_list = new Array()
 
@@ -96,6 +97,7 @@ function init_variable() {
     isdebug = false
     debugid = -2
     packet = []
+    repeater_packet = []
     page_list = new Array()
     request_list = new Array()
     page_index = -1 // integer
@@ -105,17 +107,17 @@ function init_variable() {
     sendpage_index = -1
     reset_index = 0
     init_option["start"] = false,
-        init_option["url"] = "",
-        init_option["url_domain"] = "",
-        init_option["page_tab"] = new Object(),
-        init_option["page_tabid"] = -1,
-        init_option["debug_tabid"] = -1,
-        //init_option["popup_port"] = null,
-        init_option["repeater_port"] = null,
-        init_option["content_port"] = null
+    init_option["url"] = "",
+    init_option["url_domain"] = "",
+    init_option["page_tab"] = new Object(),
+    init_option["page_tabid"] = -1,
+    init_option["debug_tabid"] = -1,
+    //init_option["popup_port"] = null,
+    init_option["repeater_port"] = null,
+    init_option["content_port"] = null
     init_option["document_url"] = undefined,
-        init_option["document_packet_index"] = -1,
-        init_option["document_requestId"] = -1
+    init_option["document_packet_index"] = -1,
+    init_option["document_requestId"] = -1
     listener_function["tabs_onUpdated"] = undefined
     listener_function["tabs_onRemoved"] = undefined
 }
@@ -368,13 +370,17 @@ const debugAttach = async function (tabId, changeInfo, tab) {
                             //console.log(params.requestId,requestId,request.url)
                             packet[loader_dict[params.loaderId]][requestId][0]["request"]["method"] = request.method
                             //console.log(params.requestId,requestId,request.method)
+
                             lower_header = request.headers
                             packet[loader_dict[params.loaderId]][requestId][0]["request"]["headers"] = Object.keys(request.headers).reduce((c, k) => (c[k.toLowerCase()] = request.headers[k], c), {});
                             //console.log(params.requestId,JSON.stringify(request.headers))
                             if (request.hasPostData)
-                                packet[loader_dict[params.loaderId]][requestId][0]["request"]["body"] = request.postData
+                            packet[loader_dict[params.loaderId]][requestId][0]["request"]["body"] = request.postData
                             //console.log(params.requestId,requestId,request.postData)
-
+                            
+                            
+                            repeater_packet = packet
+                            repeater_packet[loader_dict[params.loaderId]][requestId][0]["request"]["headers"] = request.headers;
                         }
 
                         break
@@ -410,6 +416,8 @@ const debugAttach = async function (tabId, changeInfo, tab) {
                                     packet[loader_dict[params.loaderId]][requestId][0]["response"]["body"] = result.body
                                 }
                                 //console.log(params.requestId,requestId,result.body)
+                                repeater_packet = packet
+                                repeater_packet[loader_dict[params.loaderId]][requestId][0]["response"]["headers"] = response.headers;
                             }
                         }
                     }
@@ -483,18 +491,25 @@ listener_function["tabs_onUpdatded"] = async (tabId, changeInfo, tab) => {
             current_link = tab.url
             if (print_index != -1) {
                 //console.log("완료되면 패킷 출력", packet[print_index]) // 현재 페이지 url 로 전송  
-                const data = {}
+                const data = {};
                 data[current_link] = Object.values(packet[print_index]).reduce((c, value) => {
                     c.push(value[0]);
                     return c
-                }, new Array())
+                }, new Array());
+
+                const repeater_data = {};
+                repeater_data[current_link] = Object.values(repeater_packet[print_index]).reduce((c, value) => {
+                    c.push(value[0]);
+                    return c
+                }, new Array());
+
                 console.log("완료되면 패킷 출력", data)
                 console.log("api로 전송 시작")
 
                 try{
                     init_option["repeater_port"].postMessage({
                         "type": "RequestPackets",
-                        "data": data
+                        "data": repeater_data
                     })
                 } catch {
                     

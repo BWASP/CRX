@@ -111,7 +111,7 @@ function init_variable() {
         init_option["page_tabid"] = -1,
         init_option["debug_tabid"] = -1,
         //init_option["popup_port"] = null,
-        init_optionn["repeater_port"] = null,
+        init_option["repeater_port"] = null,
         init_option["content_port"] = null
     init_option["document_url"] = undefined,
         init_option["document_packet_index"] = -1,

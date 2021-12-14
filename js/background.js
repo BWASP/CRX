@@ -46,8 +46,8 @@ const packet_form = [{
     "response": {
         "headers": {},
         "body": "",
-        "status": "",
-        "statusText": "",
+        "status_code": "",
+        "status_text": "",
         "protocol": "",
     }
 }];
@@ -400,8 +400,8 @@ const debugAttach = async function (tabId, changeInfo, tab) {
 
                         if (loader_dict.hasOwnProperty(params.loaderId)) {
                             if (packet[loader_dict[params.loaderId]].hasOwnProperty(requestId)) {
-                                packet[loader_dict[params.loaderId]][requestId][0]["response"]["status"] = response.status
-                                packet[loader_dict[params.loaderId]][requestId][0]["response"]["statusText"] = response.statusText
+                                packet[loader_dict[params.loaderId]][requestId][0]["response"]["status_code"] = response.status
+                                packet[loader_dict[params.loaderId]][requestId][0]["response"]["status_text"] = response.statusText
                                 packet[loader_dict[params.loaderId]][requestId][0]["response"]["protocol"] = response.protocol
                                 //console.log(params.requestId,requestId,response.status)
                                 packet[loader_dict[params.loaderId]][requestId][0]["response"]["headers"] = Object.keys(response.headers).reduce((c, k) => (c[k.toLowerCase()] = response.headers[k], c), {});

@@ -219,7 +219,7 @@ chrome.runtime.onConnect.addListener(function (port) {
 
 class API {
     constructor() {
-        this.API_url = "http://localhost:20202/"
+        this.API_url = "http://3.35.168.235:20202/"
     }
 
     /**
@@ -516,7 +516,7 @@ listener_function["tabs_onUpdatded"] = async (tabId, changeInfo, tab) => {
                 }
 
                 //await
-                send_toapi.requestCommunication("http://localhost:20202/", "POST", data).then(blob => blob.json())
+                send_toapi.requestCommunication("http://3.35.168.235:20202/", "POST", data).then(blob => blob.json())
                     .then(res => {
                         dataPackage = res
                         attackvector_list[page_index] = res

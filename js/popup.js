@@ -13,7 +13,7 @@ class Popup {
                 status: true
             }
         }
-        this.APIBase = "http://3.35.168.235";
+        this.APIBase = "http://localhost";
 
         this.renderData = {
             elements: {

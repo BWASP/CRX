@@ -34,7 +34,7 @@ class Repeater {
     
                 case "res":
                 console.log("response status: ", packet);
-                data += packet['protocol'] + " " + packet["status"] + " " + packet["statusText"] + "\r\n"
+                data += packet['protocol'] + " " + packet["status_code"] + " " + packet["status_text"] + "\r\n"
                 data += this.header_parse(packet);
                 data += "\r\n" + packet["body"];
                 break

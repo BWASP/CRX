@@ -18,7 +18,10 @@ class Repeater {
         let data = "";
         headerSet.forEach((header) => {
             // console.log('headers: ', packet['headers'][header]);
-            data += header + ": " + packet["headers"][header].toString() + "\r\n";
+            if(packet["headers"][header])
+            {
+                data += header + ": " + packet["headers"][header].toString() + "\r\n";
+            }
         });
         return data;
     }
@@ -99,14 +102,30 @@ class Repeater {
             // console.log('xhr headers: ', key, headers[key]);
         });
 
+        var _this = this
+
         this.init_option['xhr'].onreadystatechange = function (event) { 
             let { target } = event; 
             if (target.readyState === XMLHttpRequest.DONE) { 
-                let { status } = target; 
+                let { status, statusText } = target;
                 if (status === 0 || (status >= 200 && status < 400)) { 
                     // 요청이 정상적으로 처리 된 경우 
                     // console.log("요청이 정상적으로 처리된 경우");
+
+                    let res_headers = _this.init_option['xhr'].getAllResponseHeaders();
+                    res_headers = res_headers.split('\r\n').reduce(function (data, eachline){data[eachline.split(': ')[0]] = eachline.split(': ')[1];return data;}, {});
                     console.log("response: ", target.response)
+                    _this.init_option['packet_list'][_this.init_option['packet_idx']]['response']['status_code']=status
+                    _this.init_option['packet_list'][_this.init_option['packet_idx']]['response']['status_text'] = statusText
+                    _this.init_option['packet_list'][_this.init_option['packet_idx']]['response']['body']=target.response
+                    _this.init_option['packet_list'][_this.init_option['packet_idx']]['response']['headers']= res_headers
+                    
+                    //protocol은 원본 유지(xmlhttp에서 기능 없음)
+
+                
+                    
+                    _this.init_option['response_area'].value = _this.packet_stringify("res",_this.init_option['packet_list'][_this.init_option['packet_idx']]['response'])
+
                 } else { 
                     // 에러가 발생한 경우 
                     // console.log("에러가 발생한 경우");

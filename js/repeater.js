@@ -10,6 +10,7 @@ class Repeater {
             "response_area": document.getElementById("responseTextarea"),
             "send_button": document.getElementById("repeater-send"),
             "xhr": new XMLHttpRequest(),
+            "host_url": undefined,
         }
     }
 
@@ -49,7 +50,8 @@ class Repeater {
     }
 
     packet_parse(packet) {
-        let host_url = "https://webhacking.kr/";
+        let host_url = this.init_option['host_url']
+        //let host_url = "https://webhacking.kr/";
 
         // preprocessing(전처리과정) => 패킷을 라인별로 배열에 저장
         packet = packet.replace('\r\n','\n');
@@ -153,6 +155,8 @@ repeater.init_option['background_port'].onMessage.addListener(function (msg) {
             });
         });
 
+        //repeater.init_option['host_url']  = "https://webhacking.kr/";
+        repeater.init_option['host_url']  = msg.host_url
         repeater.init_option['packet_list'] = repeater.init_option['packet_list'].concat(packetList);
         repeater.init_option['request_area'].value = repeater.packet_stringify("req",repeater.init_option['packet_list'][repeater.init_option['packet_idx']]['request'])
         repeater.init_option['response_area'].value = repeater.packet_stringify("res",repeater.init_option['packet_list'][repeater.init_option['packet_idx']]['response'])

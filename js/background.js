@@ -509,7 +509,8 @@ listener_function["tabs_onUpdatded"] = async (tabId, changeInfo, tab) => {
                 try{
                     init_option["repeater_port"].postMessage({
                         "type": "RequestPackets",
-                        "data": repeater_data
+                        "data": repeater_data,
+                        "host_url": current_link
                     })
                 } catch {
                     

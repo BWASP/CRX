@@ -9,6 +9,8 @@ class Repeater {
             "request_area": document.getElementById("requestTextarea"),
             "response_area": document.getElementById("responseTextarea"),
             "send_button": document.getElementById("repeater-send"),
+            "prev_button": document.getElementById("repeater-prev"),
+            "next_button": document.getElementById("repeater-next"),
             "xhr": new XMLHttpRequest(),
             "host_url": undefined,
         }
@@ -163,6 +165,19 @@ repeater.init_option['background_port'].onMessage.addListener(function (msg) {
     }
 });
 
+// Request Packet Send Event
 repeater.init_option['send_button'].addEventListener('click', function() {
     repeater.packet_parse(repeater.init_option['request_area'].value);
+});
+
+// Press Prev Packet Button
+repeater.init_option['prev_button'].addEventListener('click', function() {
+    // act something when user presses the prev button
+    console.log("this is prev button...!");
+});
+
+// Press Next Packet Button
+repeater.init_option['next_button'].addEventListener('click', function() {
+    // act something when user presses the next button
+    console.log("this is next button...!");
 });

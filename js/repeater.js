@@ -10,6 +10,7 @@ class Repeater {
             "response_area": document.getElementById("responseTextarea"),
             "send_button": document.getElementById("repeater-send"),
             "xhr": new XMLHttpRequest(),
+            "host_url": undefined,
         }
     }
 
@@ -18,7 +19,10 @@ class Repeater {
         let data = "";
         headerSet.forEach((header) => {
             // console.log('headers: ', packet['headers'][header]);
-            data += header + ": " + packet["headers"][header].toString() + "\r\n";
+            if(packet["headers"][header])
+            {
+                data += header + ": " + packet["headers"][header].toString() + "\r\n";
+            }
         });
         return data;
     }
@@ -46,7 +50,8 @@ class Repeater {
     }
 
     packet_parse(packet) {
-        let host_url = "https://webhacking.kr/";
+        let host_url = this.init_option['host_url']
+        //let host_url = "https://webhacking.kr/";
 
         // preprocessing(전처리과정) => 패킷을 라인별로 배열에 저장
         packet = packet.replace('\r\n','\n');
@@ -99,14 +104,30 @@ class Repeater {
             // console.log('xhr headers: ', key, headers[key]);
         });
 
+        var _this = this
+
         this.init_option['xhr'].onreadystatechange = function (event) { 
             let { target } = event; 
             if (target.readyState === XMLHttpRequest.DONE) { 
-                let { status } = target; 
+                let { status, statusText } = target;
                 if (status === 0 || (status >= 200 && status < 400)) { 
                     // 요청이 정상적으로 처리 된 경우 
                     // console.log("요청이 정상적으로 처리된 경우");
+
+                    let res_headers = _this.init_option['xhr'].getAllResponseHeaders();
+                    res_headers = res_headers.split('\r\n').reduce(function (data, eachline){data[eachline.split(': ')[0]] = eachline.split(': ')[1];return data;}, {});
                     console.log("response: ", target.response)
+                    _this.init_option['packet_list'][_this.init_option['packet_idx']]['response']['status_code']=status
+                    _this.init_option['packet_list'][_this.init_option['packet_idx']]['response']['status_text'] = statusText
+                    _this.init_option['packet_list'][_this.init_option['packet_idx']]['response']['body']=target.response
+                    _this.init_option['packet_list'][_this.init_option['packet_idx']]['response']['headers']= res_headers
+                    
+                    //protocol은 원본 유지(xmlhttp에서 기능 없음)
+
+                
+                    
+                    _this.init_option['response_area'].value = _this.packet_stringify("res",_this.init_option['packet_list'][_this.init_option['packet_idx']]['response'])
+
                 } else { 
                     // 에러가 발생한 경우 
                     // console.log("에러가 발생한 경우");
@@ -134,6 +155,8 @@ repeater.init_option['background_port'].onMessage.addListener(function (msg) {
             });
         });
 
+        //repeater.init_option['host_url']  = "https://webhacking.kr/";
+        repeater.init_option['host_url']  = msg.host_url
         repeater.init_option['packet_list'] = repeater.init_option['packet_list'].concat(packetList);
         repeater.init_option['request_area'].value = repeater.packet_stringify("req",repeater.init_option['packet_list'][repeater.init_option['packet_idx']]['request'])
         repeater.init_option['response_area'].value = repeater.packet_stringify("res",repeater.init_option['packet_list'][repeater.init_option['packet_idx']]['response'])

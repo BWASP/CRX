@@ -68,8 +68,16 @@ footer>div>p{
     height: 10% !important;
 }
 
+.h-10{
+    height: 15% !important;
+}
+
 .h-90{
     height: 90% !important;
+}
+
+.h-85{
+    height: 85% !important;
 }
 
 .vector-tableKey{

@@ -119,9 +119,9 @@ class Repeater {
                     let res_headers = _this.init_option['xhr'].getAllResponseHeaders();
                     res_headers = res_headers.split('\r\n').reduce(function (data, eachline){data[eachline.split(': ')[0]] = eachline.split(': ')[1];return data;}, {});
                     console.log("response: ", target.response)
-                    _this.init_option['packet_list'][_this.init_option['packet_idx']]['response']['status_code']=status
+                    _this.init_option['packet_list'][_this.init_option['packet_idx']]['response']['status_code']= status
                     _this.init_option['packet_list'][_this.init_option['packet_idx']]['response']['status_text'] = statusText
-                    _this.init_option['packet_list'][_this.init_option['packet_idx']]['response']['body']=target.response
+                    _this.init_option['packet_list'][_this.init_option['packet_idx']]['response']['body']= target.response
                     _this.init_option['packet_list'][_this.init_option['packet_idx']]['response']['headers']= res_headers
                     
                     //protocol은 원본 유지(xmlhttp에서 기능 없음)
@@ -160,6 +160,7 @@ repeater.init_option['background_port'].onMessage.addListener(function (msg) {
         //repeater.init_option['host_url']  = "https://webhacking.kr/";
         repeater.init_option['host_url']  = msg.host_url
         repeater.init_option['packet_list'] = repeater.init_option['packet_list'].concat(packetList);
+        repeater.init_option['packet_count'] = repeater.init_option['packet_list'].length;
         repeater.init_option['request_area'].value = repeater.packet_stringify("req",repeater.init_option['packet_list'][repeater.init_option['packet_idx']]['request'])
         repeater.init_option['response_area'].value = repeater.packet_stringify("res",repeater.init_option['packet_list'][repeater.init_option['packet_idx']]['response'])
     }
@@ -173,11 +174,17 @@ repeater.init_option['send_button'].addEventListener('click', function() {
 // Press Prev Packet Button
 repeater.init_option['prev_button'].addEventListener('click', function() {
     // act something when user presses the prev button
-    console.log("this is prev button...!");
+    repeater.init_option['packet_idx'] = (repeater.init_option['packet_idx']-1) < 0 ? repeater.init_option['packet_count']-1 : (repeater.init_option['packet_idx']-1)
+    // console.log("packet_idx: ", repeater.init_option['packet_idx']);
+    repeater.init_option['request_area'].value = repeater.packet_stringify("req",repeater.init_option['packet_list'][repeater.init_option['packet_idx']]['request'])
+    repeater.init_option['response_area'].value = repeater.packet_stringify("res",repeater.init_option['packet_list'][repeater.init_option['packet_idx']]['response'])
 });
 
 // Press Next Packet Button
 repeater.init_option['next_button'].addEventListener('click', function() {
     // act something when user presses the next button
-    console.log("this is next button...!");
+    repeater.init_option['packet_idx'] = (repeater.init_option['packet_idx']+1) > repeater.init_option['packet_count']-1 ? 0 : (repeater.init_option['packet_idx']+1)
+    // console.log("packet_idx: ", repeater.init_option['packet_idx']);
+    repeater.init_option['request_area'].value = repeater.packet_stringify("req",repeater.init_option['packet_list'][repeater.init_option['packet_idx']]['request'])
+    repeater.init_option['response_area'].value = repeater.packet_stringify("res",repeater.init_option['packet_list'][repeater.init_option['packet_idx']]['response'])
 });

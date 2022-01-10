@@ -1,6 +1,6 @@
 {
     "name": "BWASP CRX",
-    "description": "Manual web vulnerability analyzer",
+    "description": "BWASP(The BoB Web Application Security Project) Manual Web Vulnerability Analyzer → https://github.com/BWASP/BWASP",
     "version": "1.0",
     "manifest_version": 3,
     "background": {

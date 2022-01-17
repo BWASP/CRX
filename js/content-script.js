@@ -39,7 +39,7 @@ function toastBuilder(msg) {
     // toastElement.flex.close.setAttribute("aria-label","Close");
 
     // toastElement.flex.parent.append(toastElement.flex.body,toastElement.flex.close)
-    toastElement.flex.parent.appendChild(toastElement.flex.body) // test 용 추가
+    toastElement.flex.parent.appendChild(toastElement.flex.body)
 
     toastElement.parent.appendChild(toastElement.flex.parent)
 

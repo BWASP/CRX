@@ -20,7 +20,6 @@ class Repeater {
         let headerSet = Object.keys(packet["headers"]);
         let data = "";
         headerSet.forEach((header) => {
-            // console.log('headers: ', packet['headers'][header]);
             if(packet["headers"][header])
             {
                 data += header + ": " + packet["headers"][header].toString() + "\r\n";
@@ -41,7 +40,6 @@ class Repeater {
                 break
     
             case "res":
-                // console.log("response status: ", packet);
                 data += packet['protocol'] + " " + packet["status_code"] + " " + packet["status_text"] + "\r\n"
                 data += this.header_parse(packet);
                 data += "\r\n" + packet["body"];
@@ -53,19 +51,16 @@ class Repeater {
 
     packet_parse(packet) {
         let host_url = this.init_option['host_url']
-        //let host_url = "https://webhacking.kr/";
 
         // preprocessing(전처리과정) => 패킷을 라인별로 배열에 저장
         packet = packet.replace('\r\n','\n');
         let body = packet.split('\n\n')[1];
         packet = packet.split('\n\n')[0];
         let packet_per_line = packet.split('\n');
-        // console.log("packet per lines: ", packet_per_line);
         
         // first line: Method Path Protocol/Version
         let first_line = packet_per_line[0].split(' ');
         packet_per_line.shift();
-        // console.log("first_line: ", first_line);
         
         // 헤더 정보 파싱 후 JSON 형태로 변환
         let headers = new Object();
@@ -74,7 +69,6 @@ class Repeater {
             headers[header_line.split(": ")[0]] = header_line.split(": ")[1];
             packet_per_line.shift();
         });
-        // console.log("headers: ", headers);
 
         // 바디 정보 가져오기
         try {
@@ -87,7 +81,6 @@ class Repeater {
             });
             body = JSON.stringify(form_data);
         }
-        // console.log("body: ", body);
 
         this.send_request_packet(first_line[0], new URL(first_line[1], host_url).href, headers, body);
     }
@@ -103,7 +96,6 @@ class Repeater {
             } catch {
                 
             }
-            // console.log('xhr headers: ', key, headers[key]);
         });
 
         var _this = this
@@ -114,8 +106,6 @@ class Repeater {
                 let { status, statusText } = target;
                 if (status === 0 || (status >= 200 && status < 400)) { 
                     // 요청이 정상적으로 처리 된 경우 
-                    // console.log("요청이 정상적으로 처리된 경우");
-
                     let res_headers = _this.init_option['xhr'].getAllResponseHeaders();
                     res_headers = res_headers.split('\r\n').reduce(function (data, eachline){data[eachline.split(': ')[0]] = eachline.split(': ')[1];return data;}, {});
                     console.log("response: ", target.response)
@@ -132,12 +122,10 @@ class Repeater {
 
                 } else { 
                     // 에러가 발생한 경우 
-                    // console.log("에러가 발생한 경우");
                 } 
             } 
         };
         this.init_option['xhr'].send(body);
-        // console.log("Sent Request Packet Successfully!!!");
     }
 }
 
@@ -145,7 +133,6 @@ let repeater = new Repeater();
 
 repeater.init_option['background_port'].onMessage.addListener(function (msg) {
     if (msg.type == "RequestPackets") {
-        // console.log("Received Request Packets Successfully!")
         
         let packetList = Array();
         let dataSet = msg.data;
@@ -157,7 +144,6 @@ repeater.init_option['background_port'].onMessage.addListener(function (msg) {
             });
         });
 
-        //repeater.init_option['host_url']  = "https://webhacking.kr/";
         repeater.init_option['host_url']  = msg.host_url
         repeater.init_option['packet_list'] = repeater.init_option['packet_list'].concat(packetList);
         repeater.init_option['packet_count'] = repeater.init_option['packet_list'].length;
@@ -175,7 +161,6 @@ repeater.init_option['send_button'].addEventListener('click', function() {
 repeater.init_option['prev_button'].addEventListener('click', function() {
     // act something when user presses the prev button
     repeater.init_option['packet_idx'] = (repeater.init_option['packet_idx']-1) < 0 ? repeater.init_option['packet_count']-1 : (repeater.init_option['packet_idx']-1)
-    // console.log("packet_idx: ", repeater.init_option['packet_idx']);
     repeater.init_option['request_area'].value = repeater.packet_stringify("req",repeater.init_option['packet_list'][repeater.init_option['packet_idx']]['request'])
     repeater.init_option['response_area'].value = repeater.packet_stringify("res",repeater.init_option['packet_list'][repeater.init_option['packet_idx']]['response'])
 });
@@ -184,7 +169,6 @@ repeater.init_option['prev_button'].addEventListener('click', function() {
 repeater.init_option['next_button'].addEventListener('click', function() {
     // act something when user presses the next button
     repeater.init_option['packet_idx'] = (repeater.init_option['packet_idx']+1) > repeater.init_option['packet_count']-1 ? 0 : (repeater.init_option['packet_idx']+1)
-    // console.log("packet_idx: ", repeater.init_option['packet_idx']);
     repeater.init_option['request_area'].value = repeater.packet_stringify("req",repeater.init_option['packet_list'][repeater.init_option['packet_idx']]['request'])
     repeater.init_option['response_area'].value = repeater.packet_stringify("res",repeater.init_option['packet_list'][repeater.init_option['packet_idx']]['response'])
 });

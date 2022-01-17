@@ -10,7 +10,6 @@
       "default_popup": "/html/popup.html",
       "default_title": "BWASP CRX"
     },
-    "options_page": "/html/options.html",
     "permissions": ["tabs","activeTab","debugger","scripting","cookies","declarativeContent","storage"],
     "host_permissions": ["http://*/*","https://*/*"],
 

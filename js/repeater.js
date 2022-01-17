@@ -108,7 +108,6 @@ class Repeater {
                     // 요청이 정상적으로 처리 된 경우 
                     let res_headers = _this.init_option['xhr'].getAllResponseHeaders();
                     res_headers = res_headers.split('\r\n').reduce(function (data, eachline){data[eachline.split(': ')[0]] = eachline.split(': ')[1];return data;}, {});
-                    console.log("response: ", target.response)
                     _this.init_option['packet_list'][_this.init_option['packet_idx']]['response']['status_code']= status
                     _this.init_option['packet_list'][_this.init_option['packet_idx']]['response']['status_text'] = statusText
                     _this.init_option['packet_list'][_this.init_option['packet_idx']]['response']['body']= target.response

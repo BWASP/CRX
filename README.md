@@ -2,6 +2,8 @@
 
 The BoB Web Application Security Project (BWASP) is an open-source, analysis tool to support for Web Vulnerability Manual Analysis hackers.
 
+The BWASP tool basically provides predicted information through vulnerability analysis without proceeding with an attack.
+
 BWASP supports performing automated analysis and manual analysis.
 
 The BWASP Project supports:
@@ -10,6 +12,8 @@ The BWASP Project supports:
 * Detect website technology.
 * Log4J vulnerability scan (Partially supports java language)
 * HTTP REST API
+* GuideLine Result
+* Test payload option(attack test)
 
 ## Getting started
 ```bash
@@ -19,8 +23,8 @@ python3 start.py
 ```
 
 ## BWASP Tool Guide
-* [guide-ko-documentation](https://github.com/BWASP/BWASP/blob/main/GUIDE_ko.md)
-* [guide-en-documentation](https://github.com/BWASP/BWASP/blob/main/GUIDE_en.md)
+* [guide-ko-documentation](./GUIDE_ko.md)
+* [guide-en-documentation](./GUIDE_en.md)
 
 ## Roadmap
 * Add OSINT feature (find subdomains)

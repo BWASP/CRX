@@ -23,8 +23,8 @@ python3 start.py
 ```
 
 ## BWASP Tool Guide
-* [guide-ko-documentation](./GUIDE_ko.md)
-* [guide-en-documentation](./GUIDE_en.md)
+* [guide-ko-documentation](./https://github.com/BWASP/BWASP/blob/main/GUIDE_ko.md)
+* [guide-en-documentation](./https://github.com/BWASP/BWASP/blob/main/GUIDE_en.md)
 
 ## Roadmap
 * Add OSINT feature (find subdomains)
